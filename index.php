@@ -157,17 +157,27 @@ $data = [];     // Biến chứa dữ liệu truyền vào View
 switch ($actionParam) {
     // --- Xử lý riêng cho Login & Profile ---
     case 'index': // Action mặc định cho trang chủ
-        // Nếu controller có hàm index thì gọi nó (để xử lý logic nếu có)
-       if ($controllerParam === 'home') {
-            $viewFile = "views/home/homePage.php";
+        // Nếu controller là 'login', gán view login.php
+        if ($controllerParam === 'login') {
+            $viewFile = "views/login.php";
+            break; // THÊM LỆNH BREAK
         }
+
+        // Nếu controller là 'home'
+        if ($controllerParam === 'home') {
+            $viewFile = "views/home/homePage.php";
+            break; // THÊM LỆNH BREAK
+        }
+        
         // Xử lý index cho Profile
         if ($controllerParam === 'profile') {
             $data = $ctrl->index();
-            $viewFile = "views/profile/profile.php"; // SỬA ĐỔI TÊN FILE
+            $viewFile = "views/profile/profile.php";
             break;
         }
-
+        
+        
+        break;
     case 'authenticate':
         if ($controllerParam === 'login' && $_SERVER['REQUEST_METHOD'] === 'POST') {
             $ctrl->authenticate($_POST);
