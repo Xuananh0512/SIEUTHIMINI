@@ -12,8 +12,55 @@ $current_page = $current_page ?? 1;
 $total_records = $total_records ?? 0;
 $controller = 'product'; 
 $action = 'list';
+// Lấy các biến tìm kiếm trả về từ Controller
+$search_name = $search_name ?? '';
+$price_min   = $price_min ?? '';
+$price_max   = $price_max ?? '';
+
+// Giữ lại tham số tìm kiếm khi chuyển trang
+$query_params = $_GET;
+unset($query_params['page']); 
+$query_string = http_build_query($query_params);
 ?>
 
+
+<div class="card mb-4 bg-light">
+    <div class="card-body">
+        <form action="index.php" method="GET" class="row g-3 align-items-end">
+            <input type="hidden" name="controller" value="product">
+            <input type="hidden" name="action" value="list">
+
+            <div class="col-md-4">
+                <label class="form-label fw-bold">Tên sản phẩm</label>
+                <input type="text" name="search_name" class="form-control" 
+                       placeholder="Nhập tên..." value="<?= htmlspecialchars($search_name) ?>">
+            </div>
+            
+            <div class="col-md-4">
+                <label class="form-label fw-bold">Khoảng giá (VNĐ)</label>
+                <div class="input-group">
+                    <input type="number" name="price_min" class="form-control" 
+                           placeholder="Từ giá..." min="0" value="<?= htmlspecialchars($price_min) ?>" step="1000">
+                    <span class="input-group-text">-</span>
+                    <input type="number" name="price_max" class="form-control" 
+                           placeholder="Đến giá..." min="0" value="<?= htmlspecialchars($price_max) ?>" step="1000">
+                </div>
+            </div>
+            
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fa-solid fa-filter"></i> Lọc
+                </button>
+            </div>
+            
+            <div class="col-md-2">
+                <a href="index.php?controller=product&action=list" class="btn btn-outline-secondary w-100">
+                    <i class="fa-solid fa-rotate-left"></i> Xóa lọc
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
 <div class="table-responsive">
     <table class="table table-bordered table-striped align-middle">
         <thead class="table-dark">
@@ -64,6 +111,10 @@ $action = 'list';
     </table>
 </div>
 
+
+<div class="table-responsive">
+    </div>
+
 <div class="d-flex justify-content-between align-items-center mt-4">
     <div class="text-muted">
         Hiển thị <?= count($products) ?> sản phẩm trên tổng số <?= $total_records ?>
@@ -74,33 +125,28 @@ $action = 'list';
         <ul class="pagination mb-0">
             
             <li class="page-item <?= ($current_page <= 1) ? 'disabled' : '' ?>">
-                <a class="page-link" href="index.php?controller=<?= $controller ?>&action=<?= $action ?>&page=<?= $current_page - 1 ?>" aria-label="Previous">
+                <a class="page-link" href="index.php?<?= $query_string ?>&page=<?= $current_page - 1 ?>" aria-label="Previous">
                     <span aria-hidden="true">&laquo;</span>
                 </a>
             </li>
             
             <?php 
-            // Logic hiển thị tối đa 5 nút trang
             $start_page = max(1, $current_page - 2);
             $end_page = min($total_pages, $current_page + 2);
             
-            if ($current_page <= 3) {
-                $end_page = min($total_pages, 5);
-            }
-            if ($current_page > $total_pages - 3) {
-                $start_page = max(1, $total_pages - 4);
-            }
+            if ($current_page <= 3) { $end_page = min($total_pages, 5); }
+            if ($current_page > $total_pages - 3) { $start_page = max(1, $total_pages - 4); }
             
             for ($i = $start_page; $i <= $end_page; $i++): ?>
                 <li class="page-item <?= ($i == $current_page) ? 'active' : '' ?>">
-                    <a class="page-link" href="index.php?controller=<?= $controller ?>&action=<?= $action ?>&page=<?= $i ?>">
+                    <a class="page-link" href="index.php?<?= $query_string ?>&page=<?= $i ?>">
                         <?= $i ?>
                     </a>
                 </li>
             <?php endfor; ?>
             
             <li class="page-item <?= ($current_page >= $total_pages) ? 'disabled' : '' ?>">
-                <a class="page-link" href="index.php?controller=<?= $controller ?>&action=<?= $action ?>&page=<?= $current_page + 1 ?>" aria-label="Next">
+                <a class="page-link" href="index.php?<?= $query_string ?>&page=<?= $current_page + 1 ?>" aria-label="Next">
                     <span aria-hidden="true">&raquo;</span>
                 </a>
             </li>
