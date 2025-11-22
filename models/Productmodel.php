@@ -1,45 +1,86 @@
 <?php
 class ProductModel extends Database
+{   
+    
+
+    // 1. Hàm buildWhere nhận thêm tham số minPrice, maxPrice
+private function buildWhere($keyword, $minPrice, $maxPrice) {
+    $conditions = [];
+    $types = "";
+    $params = [];
+
+    // Lọc theo tên
+    if (!empty($keyword)) {
+        $conditions[] = "sp.tenSP LIKE ?";
+        $types .= "s";
+        $params[] = "%$keyword%";
+    }
+
+    // Lọc giá TỐI THIỂU (>=)
+    if (!empty($minPrice) || $minPrice === '0') {
+        $conditions[] = "sp.donGiaBan >= ?";
+        $types .= "d";
+        $params[] = $minPrice;
+    }
+
+    // Lọc giá TỐI ĐA (<=)
+    if (!empty($maxPrice)) {
+        $conditions[] = "sp.donGiaBan <= ?";
+        $types .= "d";
+        $params[] = $maxPrice;
+    }
+
+    $whereSql = "";
+    if (count($conditions) > 0) {
+        $whereSql = " WHERE " . implode(" AND ", $conditions);
+    }
+
+    return [$whereSql, $types, $params];
+}
+
+// 2. Cập nhật countAll
+public function countAll($keyword = null, $minPrice = null, $maxPrice = null)
 {
-
-    // =======================================================
-    // ** PHÂN TRANG: HÀM ĐẾM TỔNG SỐ BẢN GHI **
-    // =======================================================
-    public function countAll()
-    {
-        $sql = "SELECT COUNT(*) FROM sanpham";
-        $result = $this->conn->query($sql)->fetch_row();
-        return $result[0] ?? 0;
+    list($whereSql, $types, $params) = $this->buildWhere($keyword, $minPrice, $maxPrice);
+    
+    $sql = "SELECT COUNT(*) FROM sanpham sp" . $whereSql;
+    $stmt = $this->conn->prepare($sql);
+    
+    if (!empty($types)) {
+        $stmt->bind_param($types, ...$params);
     }
+    
+    $stmt->execute();
+    $result = $stmt->get_result()->fetch_row();
+    return $result[0] ?? 0;
+}
 
-    // =======================================================
-    // ** PHÂN TRANG: HÀM LẤY DỮ LIỆU CÓ LIMIT & OFFSET **
-    // =======================================================
-    public function getPaginated($limit, $offset)
-    {
-        $sql = "SELECT 
-                    sp.*, 
-                    dm.tenDM, 
-                    ncc.tenNCC 
-                FROM 
-                    sanpham sp
-                LEFT JOIN 
-                    danhmuc dm ON sp.maDM = dm.maDM
-                LEFT JOIN 
-                    nhacungcap ncc ON sp.maNCC = ncc.maNCC
-                ORDER BY sp.maSP DESC
-                LIMIT ? OFFSET ?";
+// 3. Cập nhật getPaginated
+public function getPaginated($limit, $offset, $keyword = null, $minPrice = null, $maxPrice = null)
+{
+    list($whereSql, $types, $params) = $this->buildWhere($keyword, $minPrice, $maxPrice);
 
-        $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param("ii", $limit, $offset);
-        $stmt->execute();
+    $sql = "SELECT sp.*, dm.tenDM, ncc.tenNCC 
+            FROM sanpham sp
+            LEFT JOIN danhmuc dm ON sp.maDM = dm.maDM
+            LEFT JOIN nhacungcap ncc ON sp.maNCC = ncc.maNCC
+            $whereSql
+            ORDER BY sp.maSP DESC
+            LIMIT ? OFFSET ?";
 
-        $result = $stmt->get_result();
-        if ($result) {
-            return $result->fetch_all(MYSQLI_ASSOC);
-        }
-        return [];
-    }
+    $stmt = $this->conn->prepare($sql);
+
+    $types .= "ii"; 
+    $params[] = $limit;
+    $params[] = $offset;
+
+    $stmt->bind_param($types, ...$params);
+    $stmt->execute();
+
+    $result = $stmt->get_result();
+    if ($result) return $result->fetch_all(MYSQLI_ASSOC);
+    return [];
+}
 
     public function getAll()
     {
