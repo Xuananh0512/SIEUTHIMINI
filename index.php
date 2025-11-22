@@ -80,9 +80,6 @@ switch ($controllerParam) {
         }
         break;
 
-    // =======================================================
-// ** THÊM: ROUTING CHO TRANG PROFILE **
-    // =======================================================
     case 'profile':
         $ctrl = new ProfileController();
         // Mặc định action là index nếu không có
@@ -136,9 +133,20 @@ switch ($controllerParam) {
         $ctrl = new InvoiceDetailController();
         break;
     case 'home':
-        
         break;
-
+    case 'report':
+        $ctrl = new ReportController();
+        // Cần xử lý các action đặc biệt cho báo cáo
+        $validReportActions = [
+            'importreport', 'revenue', 'topselling', 
+            'employeeperformance', 'expiringsoon', 'lowstock'
+        ];
+        
+        if (!in_array($actionParam, $validReportActions)) {
+            // Nếu Action không hợp lệ, mặc định về báo cáo doanh thu
+            $actionParam = 'revenue'; 
+        }
+        break;
     default:
         echo "<div style='text-align:center; margin-top:50px;'>";
         echo "<h3>Error 404: Controller '$controllerParam' does not exist!</h3>";
@@ -203,6 +211,22 @@ $ctrl->edit_password($_POST);
     case 'list':
         $data = $ctrl->list();
         $viewFile = "views/$controllerParam/list.php";
+        break;
+    case 'importreport':
+    case 'revenue':
+    case 'topselling':
+    case 'employeeperformance':
+    case 'expiringsoon':
+    case 'lowstock':
+        if ($controllerParam === 'report') {
+            if (method_exists($ctrl, $actionParam)) {
+                $data = $ctrl->$actionParam(); 
+                $viewFile = "views/report/$actionParam.php";
+            } else {
+                echo "<h3>Error: Report action '$actionParam' is not implemented!</h3>";
+                exit;
+            }
+        }
         break;
 
     case 'add':
