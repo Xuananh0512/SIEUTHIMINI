@@ -24,7 +24,61 @@ $current_page = $current_page ?? 1;
 $total_records = $total_records ?? 0;
 $controller = 'invoice'; 
 $action = 'list';
+// Lấy lại giá trị tìm kiếm
+$date_from = $date_from ?? '';
+$date_to   = $date_to ?? '';
+$min_total = $min_total ?? '';
+$max_total = $max_total ?? '';
+
+// Xử lý query string cho phân trang
+$query_params = $_GET;
+unset($query_params['page']); 
+$query_string = http_build_query($query_params);
 ?>
+
+<div class="card mb-4 bg-light border-secondary">
+    <div class="card-body">
+        <form action="index.php" method="GET">
+            <input type="hidden" name="controller" value="invoice">
+            <input type="hidden" name="action" value="list">
+            
+            <div class="row g-3">
+                <div class="col-md-5">
+                    <label class="form-label fw-bold">Ngày tạo</label>
+                    <div class="input-group">
+                        <input type="date" name="date_from" class="form-control" 
+                               value="<?= htmlspecialchars($date_from) ?>" title="Từ ngày">
+                        <span class="input-group-text"><i class="fa-solid fa-arrow-right"></i></span>
+                        <input type="date" name="date_to" class="form-control" 
+                               value="<?= htmlspecialchars($date_to) ?>" title="Đến ngày">
+                    </div>
+                </div>
+
+                <div class="col-md-5">
+                    <label class="form-label fw-bold">Tổng tiền</label>
+                    <div class="input-group">
+                        <input type="number" name="min_total" class="form-control" placeholder="Tối thiểu" 
+                               min="0" value="<?= htmlspecialchars($min_total) ?>" step="1000">
+                        <span class="input-group-text">-</span>
+                        <input type="number" name="max_total" class="form-control" placeholder="Tối đa" 
+                               min="0" value="<?= htmlspecialchars($max_total) ?>" step="1000">
+                    </div>
+                </div>
+
+                <div class="col-md-2 d-flex align-items-end">
+                    <div class="d-grid gap-2 w-100">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fa-solid fa-filter"></i> Lọc
+                        </button>
+                        <a href="index.php?controller=invoice&action=list" class="btn btn-outline-secondary btn-sm">
+                            <i class="fa-solid fa-rotate-left"></i> Xóa lọc
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
 
 <div class="table-responsive">
     <table class="table table-bordered table-striped align-middle">
@@ -95,7 +149,7 @@ $action = 'list';
         <ul class="pagination mb-0">
             
             <li class="page-item <?= ($current_page <= 1) ? 'disabled' : '' ?>">
-                <a class="page-link" href="index.php?controller=<?= $controller ?>&action=<?= $action ?>&page=<?= $current_page - 1 ?>" aria-label="Previous">
+                <a class="page-link" href="index.php?<?= $query_string ?>&page=<?= $current_page - 1 ?>" aria-label="Previous">
                     <span aria-hidden="true">&laquo;</span>
                 </a>
             </li>
@@ -114,14 +168,14 @@ $action = 'list';
             
             for ($i = $start_page; $i <= $end_page; $i++): ?>
                 <li class="page-item <?= ($i == $current_page) ? 'active' : '' ?>">
-                    <a class="page-link" href="index.php?controller=<?= $controller ?>&action=<?= $action ?>&page=<?= $i ?>">
+                    <a class="page-link" href="index.php?<?= $query_string ?>&page=<?= $i ?>">
                         <?= $i ?>
                     </a>
                 </li>
             <?php endfor; ?>
             
             <li class="page-item <?= ($current_page >= $total_pages) ? 'disabled' : '' ?>">
-                <a class="page-link" href="index.php?controller=<?= $controller ?>&action=<?= $action ?>&page=<?= $current_page + 1 ?>" aria-label="Next">
+                <a class="page-link" href="index.php?<?= $query_string ?>&page=<?= $current_page + 1 ?>" aria-label="Next">
                     <span aria-hidden="true">&raquo;</span>
                 </a>
             </li>
