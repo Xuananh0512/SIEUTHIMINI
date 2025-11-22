@@ -55,7 +55,7 @@ if (file_exists('config/configdb.php')) {
 
 // Lấy tham số mặc định
 $controllerParam = $_GET['controller'] ?? 'home';
-$actionParam = $_GET['action'] ?? 'homePage';
+$actionParam = $_GET['action'] ?? 'index';
 
 // Nếu chưa đăng nhập, chuyển hướng đến trang login
 if (!isset($_SESSION['user_id']) && $controllerParam !== 'login') {
