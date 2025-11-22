@@ -1,20 +1,32 @@
 <?php
 class EmployeeService {
     private $model;
-    public function __construct() { $this->model = new EmployeeModel(); }
+    private $roleModel; // Bổ sung dependency để lấy danh sách vai trò
 
-    // =======================================================
-    // ** THÊM: HÀM DỊCH VỤ PHÂN TRANG **
-    // =======================================================
-    public function countAll() {
-        return $this->model->countAll();
+    public function __construct() { 
+        $this->model = new EmployeeModel(); 
+        // Giả định RoleModel tồn tại để lấy danh sách chức vụ cho filter
+        $this->roleModel = new RoleModel(); 
     }
 
-    public function getPaginated($limit, $offset) {
-        return $this->model->getPaginated($limit, $offset);
+    // =======================================================
+    // ** THÊM: HÀM DỊCH VỤ PHÂN TRANG CÓ LỌC **
+    // =======================================================
+    // Cập nhật để chấp nhận tham số lọc và truyền xuống Model
+    public function countAll($keyword = '', $role_id = '', $start_date = '', $end_date = '') {
+        return $this->model->countAll($keyword, $role_id, $start_date, $end_date);
+    }
+
+    public function getPaginated($limit, $offset, $keyword = '', $role_id = '', $start_date = '', $end_date = '') {
+        return $this->model->getPaginated($limit, $offset, $keyword, $role_id, $start_date, $end_date);
     }
     
-    // Các hàm còn lại
+    // --- HÀM MỚI: LẤY DANH SÁCH VAI TRÒ (Dùng cho Filter View) ---
+    public function getAllRoles() {
+        return $this->roleModel->getAll();
+    }
+    
+    // Các hàm còn lại giữ nguyên
     public function getAll() { return $this->model->getAll(); }
     public function getById($id) { return $this->model->getById($id); }
 
@@ -36,4 +48,3 @@ class EmployeeService {
     public function restore($id) { return $this->model->restore($id); }
     public function search($key) { return $this->model->search($key); }
 }
-?>
