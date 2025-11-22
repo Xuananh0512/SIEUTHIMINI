@@ -1,22 +1,54 @@
-<h2 class="border-bottom pb-2 mb-4 text-primary">
-    <i class="fa-solid fa-hourglass-end me-2"></i> 5. Cảnh Báo: Hàng Sắp Hết Hạn
+
+<?php
+$reportData = $reportData ?? [];
+$days = $days ?? 30;
+?>
+
+<h2 class="mt-3 border-bottom pb-2 text-danger">
+    <i class="fa-solid fa-clock-rotate-left"></i> Báo Cáo Sản Phẩm Sắp Hết Hạn
 </h2>
 
-<div class="card shadow-sm border-danger">
-    <div class="card-header bg-danger text-white fw-bold">Sản phẩm có Hạn Sử Dụng trong 90 ngày tới</div>
-    <div class="card-body">
-        <table class="table table-striped">
-            <thead class="table-light">
-                <tr>
-                    <th>Mã SP</th>
-                    <th>Tên Sản Phẩm</th>
-                    <th>Hạn Sử Dụng</th>
-                    <th class="text-center">Số Lượng Tồn</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr><td colspan="4" class="text-center text-muted">Đang chờ dữ liệu từ Service...</td></tr>
-            </tbody>
-        </table>
-    </div>
+<div class="alert alert-warning">
+    Hiển thị các sản phẩm có hạn sử dụng trong vòng **<?= $days ?> ngày** tới.
+</div>
+
+<div class="mb-3 d-flex justify-content-end">
+    <form method="GET" action="index.php" class="d-flex">
+        <input type="hidden" name="controller" value="report">
+        <input type="hidden" name="action" value="expiringsoon">
+        <div class="input-group">
+            <input type="number" name="days" value="<?= $days ?>" min="7" class="form-control" placeholder="Số ngày" style="width: 120px;">
+            <span class="input-group-text">ngày</span>
+            <button class="btn btn-info text-white" type="submit">Lọc</button>
+        </div>
+    </form>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-bordered table-striped table-hover">
+        <thead class="table-danger">
+            <tr>
+                <th>Mã SP</th>
+                <th>Tên Sản Phẩm</th>
+                <th>Đơn Vị Tính</th>
+                <th>Tồn Kho</th>
+                <th>Hạn Sử Dụng</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php if (!empty($reportData)): ?>
+                <?php foreach ($reportData as $row): ?>
+                    <tr>
+                        <td><?= $row['maSP'] ?></td>
+                        <td class="fw-bold"><?= $row['tenSP'] ?></td>
+                        <td><?= $row['donViTinh'] ?></td>
+                        <td class="text-center fw-bold text-danger"><?= $row['soLuongTon'] ?></td>
+                        <td class="text-danger fw-bold"><?= date('d/m/Y', strtotime($row['hanSuDung'])) ?></td>
+                    </tr>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <tr><td colspan="5" class="text-center">Tuyệt vời! Không có sản phẩm nào sắp hết hạn trong vòng <?= $days ?> ngày tới.</td></tr>
+            <?php endif; ?>
+        </tbody>
+    </table>
 </div>
