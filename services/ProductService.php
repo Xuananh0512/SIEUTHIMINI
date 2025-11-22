@@ -3,8 +3,16 @@ class ProductService {
     private $model;
     public function __construct() { $this->model = new ProductModel(); }
 
-    public function countAll() { return $this->model->countAll(); }
-    public function getPaginated($limit, $offset) { return $this->model->getPaginated($limit, $offset); }
+    // Cập nhật hàm countAll nhận tham số
+// Trong ProductService.php
+
+public function countAll($keyword = null, $minPrice = null, $maxPrice = null) { 
+    return $this->model->countAll($keyword, $minPrice, $maxPrice); 
+}
+
+public function getPaginated($limit, $offset, $keyword = null, $minPrice = null, $maxPrice = null) { 
+    return $this->model->getPaginated($limit, $offset, $keyword, $minPrice, $maxPrice); 
+}
     public function getAll() { return $this->model->getAll(); }
     public function getById($id) { return $this->model->getById($id); }
     
@@ -49,5 +57,7 @@ class ProductService {
             'units' => $prodModel->getDistinctUnits()
         ];
     }
+
+    
 }
 ?>

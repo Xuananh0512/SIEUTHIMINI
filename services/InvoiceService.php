@@ -10,8 +10,13 @@ class InvoiceService {
         $this->productModel = new ProductModel();
     }
 
-    public function countAll() { return $this->model->countAll(); }
-    public function getPaginated($limit, $offset) { return $this->model->getPaginated($limit, $offset); }
+    public function countAll($dateFrom = null, $dateTo = null, $minTotal = null, $maxTotal = null) { 
+    return $this->model->countAll($dateFrom, $dateTo, $minTotal, $maxTotal); 
+}
+
+    public function getPaginated($limit, $offset, $dateFrom = null, $dateTo = null, $minTotal = null, $maxTotal = null) { 
+        return $this->model->getPaginated($limit, $offset, $dateFrom, $dateTo, $minTotal, $maxTotal); 
+    }
     public function getAll() { return $this->model->getAll(); }
 
     public function getById($id) {
