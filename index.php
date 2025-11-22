@@ -188,7 +188,7 @@ switch ($actionParam) {
         break;
     case 'authenticate':
         if ($controllerParam === 'login' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-            $ctrl->authenticate($_POST);
+            $ctrl->authenticate($_POST); // Hàm này xử lý xong sẽ redirect
             exit;
         }
         break;
