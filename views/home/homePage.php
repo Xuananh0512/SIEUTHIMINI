@@ -53,7 +53,7 @@
         <div class="col-lg-8">
             <div class="box bg-white p-3 rounded shadow-sm">
                 <h5 class="mb-3">Biểu đồ doanh thu</h5>
-                <img src="https://i.imgur.com/KohUQDn.png" alt="Biểu đồ" class="w-100 rounded">
+                <img src="https://www.phatdat.com.vn/wp-content/uploads/2020/10/doanh-thu-va-loi-nhuan-pdr.png" alt="Biểu đồ" class="w-100 rounded">
             </div>
         </div>
 
