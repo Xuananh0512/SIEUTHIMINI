@@ -39,8 +39,8 @@ class LoginController {
             $_SESSION['display_name'] = $employee['hoTenNV'] ?? $username;
             $_SESSION['role_name'] = $employee['tenVaiTro'] ?? 'Người dùng';
             
-            // Chuyển hướng về trang chủ mặc định
-            header("Location: " . BASE_URL . "index.php?controller=product&action=list");
+            // ✅ FIX: Chuyển hướng về trang chủ (controller=home) sau khi đăng nhập
+            header("Location: " . BASE_URL . "index.php?controller=home&action=index");
             exit;
 
         } else {
