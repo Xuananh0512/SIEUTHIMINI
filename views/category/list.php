@@ -1,8 +1,12 @@
 <?php
-// Kiểm tra thông báo lỗi từ Session
+// Kiểm tra thông báo lỗi/thành công từ Session
 if (isset($_SESSION['error'])) {
-    echo "<script>alert('" . $_SESSION['error'] . "');</script>";
-    unset($_SESSION['error']);
+    echo '<div class="alert alert-danger" role="alert">' . $_SESSION['error'] . '</div>';
+    unset($_SESSION['error']); 
+}
+if (isset($_SESSION['success'])) {
+    echo '<div class="alert alert-success" role="alert">' . $_SESSION['success'] . '</div>';
+    unset($_SESSION['success']);
 }
 ?>
 
@@ -14,8 +18,6 @@ if (isset($_SESSION['error'])) {
 </div>
 
 <?php 
-// Controller đã truyền vào các biến thông qua hàm extract() trong index.php.
-// Biến categories là danh sách danh mục.
 $categories = $categories ?? []; 
 $total_pages = $total_pages ?? 1;
 $current_page = $current_page ?? 1;
@@ -30,23 +32,42 @@ $action = 'list';
             <tr>
                 <th>Mã DM</th>
                 <th>Tên Danh Mục</th>
-                <th>Thao tác</th>
+                <th class="text-center">Trạng Thái</th>
+                <th class="text-center">Thao tác</th>
             </tr>
         </thead>
         <tbody>
             <?php if (isset($categories) && is_array($categories) && count($categories) > 0): ?>
                 <?php foreach ($categories as $row): ?>
-                    <tr>
+                    <tr class="<?= ($row['trangThai'] ?? 1) == 0 ? 'table-secondary text-muted' : '' ?>">
                         <td>DM<?= $row['maDM'] ?></td>
                         <td class="fw-bold"><?= $row['tenDM'] ?></td>
-                        <td>
+                        
+                        <td class="text-center">
+                            <?php if (($row['trangThai'] ?? 1) == 1): ?>
+                                <span class="badge bg-success">Hoạt động</span>
+                            <?php else: ?>
+                                <span class="badge bg-danger">Đã ẩn</span>
+                            <?php endif; ?>
+                        </td>
+
+                        <td class="text-center">
                             <a href="index.php?controller=category&action=edit&id=<?= $row['maDM'] ?>" class="btn btn-sm btn-warning">Sửa</a>
-                            <a href="index.php?controller=category&action=delete&id=<?= $row['maDM'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc chắn xóa danh mục này?');">Xóa</a>
+                            
+                            <?php if (($row['trangThai'] ?? 1) == 1): ?>
+                                <a href="index.php?controller=category&action=delete&id=<?= $row['maDM'] ?>&page=<?= $current_page ?>" 
+                                   class="btn btn-sm btn-danger" 
+                                   onclick="return confirm('Bạn có chắc chắn muốn ẩn danh mục này?');">Ẩn</a>
+                            <?php else: ?>
+                                <a href="index.php?controller=category&action=restore&id=<?= $row['maDM'] ?>&page=<?= $current_page ?>" 
+                                   class="btn btn-sm btn-success" 
+                                   onclick="return confirm('Bạn có muốn khôi phục danh mục này?');">Khôi phục</a>
+                            <?php endif; ?>
                         </td>
                     </tr>
                 <?php endforeach; ?>
             <?php else: ?>
-                <tr><td colspan="3" class="text-center">Chưa có dữ liệu.</td></tr>
+                <tr><td colspan="4" class="text-center">Chưa có dữ liệu.</td></tr>
             <?php endif; ?>
         </tbody>
     </table>
@@ -68,7 +89,6 @@ $action = 'list';
             </li>
             
             <?php 
-            // Logic hiển thị tối đa 5 nút trang
             $start_page = max(1, $current_page - 2);
             $end_page = min($total_pages, $current_page + 2);
             

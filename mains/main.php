@@ -84,7 +84,7 @@
 
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark border-bottom">
         <div class="container-fluid">
-            <a class="navbar-brand fw-bold" href="<?php echo BASE_URL; ?>">
+            <a class="navbar-brand fw-bold" href= "index.php?controller=home&action=index">
                 <i class="fa-solid fa-store me-2"></i>SIÊU THỊ MINI
             </a>
 
@@ -101,7 +101,7 @@
 
                     <a href="index.php?controller=login&action=logout"
                         class="btn btn-outline-light btn-sm"
-                        onclick="return confirm('Bạn có chắc chắn muốn đăng xuất khỏi hệ thống không?');">
+onclick="return confirm('Bạn có chắc chắn muốn đăng xuất khỏi hệ thống không?');">
                         Đăng xuất <i class="fa-solid fa-right-from-bracket"></i>
                     </a>
 
@@ -120,11 +120,11 @@
                     MENU QUẢN LÝ
                 </div>
                 <ul class="nav flex-column list-unstyled components">
-                    <li class="nav-item">
+                    <!-- <li class="nav-item">
                         <a href="<?php echo BASE_URL; ?>" class="nav-link">
                             <i class="fa-solid fa-house"></i> Trang chủ
                         </a>
-                    </li>
+                    </li> -->
 
                     <li class="nav-item">
                         <a href="index.php?controller=category&action=list" class="nav-link">
@@ -166,7 +166,7 @@
 
                     <li class="nav-item">
                         <a href="index.php?controller=account&action=list" class="nav-link">
-                            <i class="fa-solid fa-user-gear"></i> Tài Khoản
+<i class="fa-solid fa-user-gear"></i> Tài Khoản
                         </a>
                     </li>
                     <li class="nav-item">
@@ -177,20 +177,33 @@
                 </ul>
             </nav>
 
-            <div id="content">
+           <div id="content">
                 <div class="container-fluid bg-white p-4 rounded shadow-sm" style="min-height: 85vh;">
+                    
                     <?php
+                    // Logic to display content
                     if (isset($viewFile) && file_exists($viewFile)) {
+                        // 1. If a specific view is requested (e.g., Product List), show it
                         require_once $viewFile;
                     } else {
-                        echo "<div class='text-center mt-5'>";
-                        echo "<h3>Chào mừng đến với Hệ thống Quản lý Siêu thị</h3>";
-                        echo "<p class='text-muted'>Vui lòng chọn chức năng từ menu bên trái.</p>";
-                        echo "</div>";
+                        // 2. If no view is requested (Base URL), show the Home Page (Dashboard)
+                        $homeView = 'views/home/homePage.php';
+                        if (file_exists($homeView)) {
+                            require_once $homeView;
+                        } else {
+                            // Fallback if home view is missing
+                            echo "<div class='text-center mt-5'>";
+                            echo "<h3>Dashboard</h3>";
+                            echo "<p class='text-muted'>Please create views/home/homePage.php to see the dashboard.</p>";
+                            echo "</div>";
+                        }
                     }
                     ?>
                 </div>
             </div>
+
+
+
 
         </div>
 

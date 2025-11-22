@@ -8,7 +8,7 @@ class ProvideController {
 
     public function list() { 
         // =======================================================
-        // ** LOGIC PHÂN TRANG MỚI (10 NCC/TRANG) **
+        // ** LOGIC PHÂN TRANG (10 NCC/TRANG) **
         // =======================================================
         $limit_per_page = 10;
         $current_page = $_GET['page'] ?? 1; 
@@ -18,25 +18,21 @@ class ProvideController {
         $total_pages = ceil($total_records / $limit_per_page);
         $offset = ($current_page - 1) * $limit_per_page;
         
-        // Điều chỉnh page nếu vượt quá giới hạn
         if ($current_page > $total_pages && $total_pages > 0) {
             $current_page = $total_pages;
             $offset = ($current_page - 1) * $limit_per_page;
         }
 
-        // Lấy dữ liệu phân trang
         $providers = $this->service->getPaginated($limit_per_page, $offset);
         
-        // Trả về dữ liệu cho View
         return [
-            'providers' => $providers, // <- Biến này sẽ được sử dụng trong list.php
+            'providers' => $providers,
             'total_pages' => $total_pages,
             'current_page' => $current_page,
             'total_records' => $total_records
         ];
-        // =======================================================
     }
-
+    
     public function add($data) {
         return $this->service->add($data);
     }
@@ -48,10 +44,22 @@ class ProvideController {
     public function delete($id) {
         try {
             $this->service->delete($id);
+            $_SESSION['success'] = "Ẩn Nhà cung cấp thành công!";
         } catch (Exception $e) {
-            $_SESSION['error'] = "KHÔNG THỂ XÓA! Nhà cung cấp này đã có lịch sử Nhập hàng hoặc đang cung cấp Sản phẩm.";
+            $_SESSION['error'] = "KHÔNG THỂ ẨN: " . $e->getMessage();
         }
-        header("Location: " . BASE_URL . "index.php?controller=provide&action=list");
+        
+        $page = $_GET['page'] ?? 1;
+        header("Location: " . BASE_URL . "index.php?controller=provide&action=list&page=$page");
+        exit;
+    }
+    
+    public function restore($id) {
+        $this->service->restore($id);
+        $_SESSION['success'] = "Khôi phục Nhà cung cấp thành công!";
+        
+        $page = $_GET['page'] ?? 1;
+        header("Location: " . BASE_URL . "index.php?controller=provide&action=list&page=$page");
         exit;
     }
 

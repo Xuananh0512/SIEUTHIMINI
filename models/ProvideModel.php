@@ -28,7 +28,6 @@ class ProvideModel extends Database {
         return [];
     }
 
-    // ✅ ĐÃ SỬA: Luôn trả về MẢNG
     public function getAll() {
         $sql = "SELECT * FROM nhacungcap"; 
         $result = $this->conn->query($sql);
@@ -38,8 +37,24 @@ class ProvideModel extends Database {
         return [];
     }
     
-    // ... Các hàm khác giữ nguyên ...
-
+    // Hàm hỗ trợ kiểm tra nghiệp vụ: Đếm Sản phẩm liên quan
+    public function countRelatedProducts($maNCC) {
+        $sql = "SELECT COUNT(*) FROM sanpham WHERE maNCC = ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("i", $maNCC);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_row()[0] ?? 0;
+    }
+    
+    // Hàm hỗ trợ kiểm tra nghiệp vụ: Đếm Phiếu nhập liên quan
+    public function countRelatedImports($maNCC) {
+        $sql = "SELECT COUNT(*) FROM phieunhap WHERE maNCC = ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("i", $maNCC);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_row()[0] ?? 0;
+    }
+    
     public function add($tenNCC, $soDienThoai, $diaChi) {
         $sql = "INSERT INTO NhaCungCap (tenNCC, soDienThoai, diaChi) VALUES (?, ?, ?)";
         $stmt = $this->conn->prepare($sql);
@@ -54,14 +69,30 @@ class ProvideModel extends Database {
         return $stmt->execute();
     }
 
-    public function delete($maNCC) {
-        $sql = "DELETE FROM NhaCungCap WHERE maNCC=?";
+    // =======================================================
+    // ** THAY THẾ: HÀM DELETE THÀNH DISABLE (Ẩn) **
+    // =======================================================
+    public function disable($maNCC) {
+        $sql = "UPDATE nhacungcap SET trangThai=0 WHERE maNCC=?";
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("i", $maNCC);
         return $stmt->execute();
     }
 
-    // ✅ ĐÃ SỬA: Luôn trả về MẢNG
+    // =======================================================
+    // ** THÊM: HÀM RESTORE (Khôi phục) **
+    // =======================================================
+    public function restore($maNCC) {
+        $sql = "UPDATE nhacungcap SET trangThai=1 WHERE maNCC=?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("i", $maNCC);
+        return $stmt->execute();
+    }
+
+    public function delete($maNCC) { 
+        return $this->disable($maNCC); // Dùng lại hàm disable cho action delete
+    } 
+    
     public function search($keyword) {
         $sql = "SELECT * FROM NhaCungCap WHERE tenNCC LIKE ?";
         $keyword = "%$keyword%";

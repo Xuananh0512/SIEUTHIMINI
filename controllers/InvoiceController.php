@@ -34,13 +34,27 @@ class InvoiceController {
     }
     
     public function detail($id) { return $this->service->getById($id); }
-    public function delete($id) { return $this->service->delete($id); }
     public function search($key) { return $this->service->search($key); }
     public function getById($id) { return $this->service->getById($id); }
 
     public function add($data) {
-        // Sau khi xử lý xong, Controller sẽ chuyển hướng (trong index.php)
         return $this->service->createInvoice($data);
+    }
+    
+    // HÀM DELETE (gọi disable)
+    public function delete($id) { 
+        $this->service->delete($id);
+        $page = $_GET['page'] ?? 1;
+        header("Location: " . BASE_URL . "index.php?controller=invoice&action=list&page=$page");
+        exit;
+    }
+    
+    // ✅ THÊM: HÀM RESTORE (Khôi phục)
+    public function restore($id) {
+        $this->service->restore($id);
+        $page = $_GET['page'] ?? 1;
+        header("Location: " . BASE_URL . "index.php?controller=invoice&action=list&page=$page");
+        exit;
     }
 
     public function getAddData() {

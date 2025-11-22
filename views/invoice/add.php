@@ -7,6 +7,9 @@ $employees = $employees ?? [];
 ?>
 <h2 class="mt-3 border-bottom pb-2 text-primary">
     <i class="fa-solid fa-cart-shopping"></i> Tạo Hóa Đơn Bán Hàng
+    <a href="index.php?controller=invoice&action=list" class="btn btn-secondary float-end">
+        <i class="fa-solid fa-arrow-left"></i> Quay lại
+    </a>
 </h2>
 
 <form method="POST" action="index.php?controller=invoice&action=add" id="formInvoice" onsubmit="return checkForm()">
@@ -52,7 +55,7 @@ $employees = $employees ?? [];
                                     <input type="hidden" name="products[0][donGia]" class="price-hidden" value="0"> 
                                 </td>
                                 <td>
-                                    <input type="number" name="products[0][soLuong]" class="form-control text-center qty-input" min="1" value="1" required oninput="calcRow(this)">
+                                    <input type="number" name="products[0][soLuong]" class="form-control text-center qty-input" value="1" required oninput="calcRow(this)">
                                 </td>
                                 <td class="text-end fw-bold text-primary row-total">0</td>
                                 <td class="text-center">
@@ -97,7 +100,7 @@ $employees = $employees ?? [];
                                     <?php endforeach; ?>
                                 <?php endif; ?>
                             </select>
-                            <a href="index.php?controller=customer&action=add" class="btn btn-outline-secondary" title="Thêm khách mới">+</a>
+                            <!-- <a href="index.php?controller=customer&action=add" class="btn btn-outline-secondary" title="Thêm khách mới">+</a> -->
                         </div>
                     </div>
                     <div class="mb-3">
@@ -153,23 +156,53 @@ $employees = $employees ?? [];
         let price = parseFloat(option.getAttribute('data-price')) || 0;
         let stock = parseInt(option.getAttribute('data-stock')) || 0;
         
+        let row = select.closest('tr');
+        let qtyInput = row.querySelector('.qty-input');
+
         if(select.value !== "" && stock <= 0) {
             alert("Sản phẩm này đã hết hàng trong kho!");
+            qtyInput.value = 0; // Đặt số lượng là 0 nếu hết hàng
+        } else {
+            qtyInput.value = 1; // Đặt lại số lượng là 1 khi chọn sản phẩm hợp lệ
         }
 
-        let row = select.closest('tr');
-        
         row.querySelector('.price-display').value = new Intl.NumberFormat('vi-VN').format(price);
         row.querySelector('.price-hidden').value = price; // Lưu giá trị thực
         
-        calcRow(row.querySelector('.qty-input')); 
+        calcRow(qtyInput); // Gọi calcRow để kích hoạt kiểm tra và tính toán
     }
 
-    // 2. Tính tiền từng dòng (Giá x Số lượng)
+    // 2. Tính tiền từng dòng (Giá x Số lượng) - ** LOGIC KIỂM TRA TỒN KHO **
     function calcRow(inputElement) {
         let row = inputElement.closest('tr');
         let price = parseFloat(row.querySelector('.price-hidden').value) || 0;
-        let qty = parseFloat(row.querySelector('.qty-input').value) || 0;
+        let qtyInput = row.querySelector('.qty-input');
+        let qty = parseInt(qtyInput.value) || 0; // Dùng parseInt cho số lượng
+
+        let selectElement = row.querySelector('.sp-select');
+        let stock = 0;
+        if (selectElement.value) {
+            let option = selectElement.options[selectElement.selectedIndex];
+            stock = parseInt(option.getAttribute('data-stock')) || 0;
+        }
+
+        if (qty < 0) { // Không cho phép nhập số âm
+            qtyInput.value = 1;
+            qty = 1;
+        }
+
+        if (qty > stock && stock > 0) {
+            alert(`Số lượng mua không được vượt quá số lượng tồn kho (${stock}).`);
+            qtyInput.value = stock; 
+            qty = stock;
+        }
+
+        if (stock === 0 && qty > 0) {
+            qtyInput.value = 0;
+            qty = 0;
+            alert("Sản phẩm này đã hết hàng trong kho. Vui lòng chọn sản phẩm khác.");
+        }
+        
         let total = price * qty;
 
         row.querySelector('.row-total').innerText = new Intl.NumberFormat('vi-VN').format(total);
@@ -234,7 +267,6 @@ $employees = $employees ?? [];
         // Gán lại sự kiện cho các input mới
         newRow.querySelector('.sp-select').addEventListener('change', function() { selectProduct(this); });
         newRow.querySelector('.qty-input').addEventListener('input', function() { calcRow(this); });
-        newRow.querySelector('.qty-input').addEventListener('change', function() { calcRow(this); }); // Thêm change cho chắc
     });
 
     // 6. Xóa dòng
@@ -251,13 +283,27 @@ $employees = $employees ?? [];
         }
     });
 
-    // 7. Kiểm tra trước khi Lưu (Cải thiện logic kiểm tra)
+    // 7. Kiểm tra trước khi Lưu
     function checkForm() {
         let total = parseFloat(document.getElementById('grandTotalValue').value) || 0;
         let pay = parseFloat(document.getElementById('customerPay').value) || 0;
+        let hasProduct = false;
+
+        document.querySelectorAll('.item-row').forEach(function(row) {
+            let selectElement = row.querySelector('.sp-select');
+            let qty = parseInt(row.querySelector('.qty-input').value) || 0;
+            if (selectElement.value && qty > 0) {
+                hasProduct = true;
+            }
+        });
+
+        if (!hasProduct) {
+            alert("Vui lòng chọn ít nhất một sản phẩm và nhập số lượng lớn hơn 0!");
+            return false;
+        }
 
         if (total === 0) {
-            alert("Vui lòng chọn ít nhất một sản phẩm và nhập số lượng!");
+            alert("Tổng tiền hàng không hợp lệ. Vui lòng kiểm tra lại sản phẩm và số lượng.");
             return false;
         }
         if (pay < total) {

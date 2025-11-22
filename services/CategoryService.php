@@ -6,18 +6,9 @@ class CategoryService {
         $this->model = new CategoryModel();
     }
 
-    // =======================================================
-    // ** THÊM: HÀM DỊCH VỤ PHÂN TRANG **
-    // =======================================================
-    public function countAll() {
-        return $this->model->countAll();
-    }
+    public function countAll() { return $this->model->countAll(); }
+    public function getPaginated($limit, $offset) { return $this->model->getPaginated($limit, $offset); }
 
-    public function getPaginated($limit, $offset) {
-        return $this->model->getPaginated($limit, $offset);
-    }
-
-    // Các hàm còn lại
     public function getAll() {
         return $this->model->getAll();
     }
@@ -43,12 +34,28 @@ class CategoryService {
         return false;
     }
 
-    public function delete($id) {
-        return $this->model->delete($id);
+    // =======================================================
+    // ** THAY THẾ: HÀM DELETE THÀNH DISABLE (Ẩn) **
+    // =======================================================
+    public function disable($id) {
+        // Kiểm tra logic nghiệp vụ: Danh mục còn sản phẩm không?
+        $productModel = new ProductModel(); // Giả định ProductModel được autoload
+        
+        if ($productModel->countByCategoryId($id) > 0) {
+             throw new Exception("Danh mục này vẫn còn sản phẩm liên quan.");
+        }
+        
+        return $this->model->disable($id);
+    }
+    
+    // =======================================================
+    // ** THÊM: HÀM RESTORE (Khôi phục) **
+    // =======================================================
+    public function restore($id) {
+        return $this->model->restore($id);
     }
 
-    public function search($keyword) {
-        return $this->model->search($keyword);
-    }
+    public function delete($id) { return $this->disable($id); } // Giữ tên delete cho Controller gọi
+    public function search($keyword) { return $this->model->search($keyword); }
 }
-?>  
+?>

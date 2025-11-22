@@ -22,14 +22,13 @@ class CategoryModel extends Database {
         $stmt->execute();
         
         $result = $stmt->get_result();
-        // Trả về mảng (array)
         if ($result) {
             return $result->fetch_all(MYSQLI_ASSOC);
         }
         return [];
     }
     
-    // 1. HÀM LẤY DANH SÁCH - ✅ ĐÃ SỬA: Luôn trả về MẢNG
+    // 1. HÀM LẤY DANH SÁCH - Luôn trả về MẢNG
     public function getAll() {
         $sql = "SELECT * FROM DanhMuc";
         $result = $this->conn->query($sql);
@@ -48,7 +47,7 @@ class CategoryModel extends Database {
     }
 
     public function add($tenDM) {
-        $sql = "INSERT INTO DanhMuc (tenDM) VALUES (?)";
+        $sql = "INSERT INTO DanhMuc (tenDM, trangThai) VALUES (?, 1)"; // Mặc định trạng thái 1
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("s", $tenDM);
         return $stmt->execute();
@@ -61,14 +60,36 @@ class CategoryModel extends Database {
         return $stmt->execute();
     }
 
-    public function delete($maDM) {
-        $sql = "DELETE FROM DanhMuc WHERE maDM=?";
+    // =======================================================
+    // ** THAY THẾ: HÀM DELETE THÀNH DISABLE (Ẩn) **
+    // =======================================================
+    public function disable($maDM) {
+        $sql = "UPDATE DanhMuc SET trangThai=0 WHERE maDM=?";
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("i", $maDM);
         return $stmt->execute();
     }
+    
+    // =======================================================
+    // ** THÊM: HÀM RESTORE (Khôi phục) **
+    // =======================================================
+    public function restore($maDM) {
+        $sql = "UPDATE DanhMuc SET trangThai=1 WHERE maDM=?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("i", $maDM);
+        return $stmt->execute();
+    }
+    
+    // Hàm hỗ trợ kiểm tra nghiệp vụ trong Service
+    public function countByCategoryId($maDM) {
+        // Giả định bảng sanpham có maDM
+        $sql = "SELECT COUNT(*) FROM sanpham WHERE maDM = ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("i", $maDM);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_row()[0] ?? 0;
+    }
 
-    // ✅ ĐÃ SỬA: Luôn trả về MẢNG
     public function search($keyword) {
         $sql = "SELECT * FROM DanhMuc WHERE tenDM LIKE ?";
         $keyword = "%$keyword%";
@@ -82,4 +103,4 @@ class CategoryModel extends Database {
         return [];
     }
 }
-?> 
+?>

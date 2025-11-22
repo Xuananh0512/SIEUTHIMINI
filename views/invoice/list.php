@@ -1,5 +1,13 @@
 <?php
-// ... kiểm tra SESSION error nếu có
+// Kiểm tra thông báo lỗi/thành công từ Session
+if (isset($_SESSION['error'])) {
+    echo '<div class="alert alert-danger" role="alert">' . $_SESSION['error'] . '</div>';
+    unset($_SESSION['error']); 
+}
+if (isset($_SESSION['success'])) {
+    echo '<div class="alert alert-success" role="alert">' . $_SESSION['success'] . '</div>';
+    unset($_SESSION['success']);
+}
 ?>
 <div class="d-flex justify-content-between pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2 text-primary"><i class="fa-solid fa-file-invoice me-2"></i> Danh Sách Hóa Đơn</h1>
@@ -27,7 +35,8 @@ $action = 'list';
                 <th>Khách Hàng</th>
                 <th>Nhân Viên</th>
                 <th class="text-end">Tổng Tiền</th>
-                <th class="text-center">Hành Động</th>
+                <th class="text-center">Trạng Thái</th> 
+                <th class="text-center">Thao Tác</th>
             </tr>
         </thead>
         <tbody>
@@ -39,6 +48,15 @@ $action = 'list';
                         <td><?= $row['hoTenKH'] ?? 'Khách lẻ' ?></td>
                         <td><?= $row['hoTenNV'] ?? 'N/A' ?></td>
                         <td class="text-end fw-bold text-danger"><?= number_format($row['tongTien']) ?> đ</td>
+                        
+                        <td class="text-center">
+                            <?php if (($row['trangThai'] ?? 1) == 1): ?>
+                                <span class="badge bg-success">Hoạt động</span>
+                            <?php else: ?>
+                                <span class="badge bg-danger">Đã ẩn</span>
+                            <?php endif; ?>
+                        </td>
+                        
                         <td class="text-center">
                             <div class="btn-group">
                                 <a href="index.php?controller=invoice&action=detail&id=<?= $row['maHD'] ?>" class="btn btn-sm btn-info me-2" title="Xem Chi Tiết">
@@ -46,11 +64,13 @@ $action = 'list';
                                 </a>
 
                                 <?php if (($row['trangThai'] ?? 1) == 1): ?>
-                                    <a href="index.php?controller=invoice&action=delete&id=<?= $row['maHD'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Xác nhận ẩn Hóa đơn HD<?= $row['maHD'] ?>?');" title="Ẩn Hóa Đơn">
+                                    <a href="index.php?controller=invoice&action=delete&id=<?= $row['maHD'] ?>&page=<?= $current_page ?>" class="btn btn-sm btn-danger" onclick="return confirm('Xác nhận ẩn Hóa đơn HD<?= $row['maHD'] ?>? (Sẽ CỘNG tồn kho)');" title="Ẩn Hóa Đơn">
                                         <i class="fa-solid fa-ban"></i> Ẩn
                                     </a>
                                 <?php else: ?>
-                                    <button class="btn btn-sm btn-secondary" disabled>Đã ẩn</button>
+                                    <a href="index.php?controller=invoice&action=restore&id=<?= $row['maHD'] ?>&page=<?= $current_page ?>" class="btn btn-sm btn-success" onclick="return confirm('Xác nhận khôi phục Hóa đơn HD<?= $row['maHD'] ?>? (Sẽ TRỪ tồn kho)');" title="Khôi phục Hóa Đơn">
+                                        <i class="fa-solid fa-rotate-left"></i> Khôi phục
+                                    </a>
                                 <?php endif; ?>
                             </div>
                         </td>
@@ -58,7 +78,7 @@ $action = 'list';
                 <?php endforeach; ?>
             <?php else: ?>
                 <tr>
-                    <td colspan="6" class="text-center text-muted">Không có hóa đơn nào trong hệ thống.</td>
+                    <td colspan="7" class="text-center text-muted">Không có hóa đơn nào trong hệ thống.</td>
                 </tr>
             <?php endif; ?>
         </tbody>

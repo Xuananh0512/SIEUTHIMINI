@@ -36,7 +36,7 @@ spl_autoload_register(function ($className) {
 
     foreach ($directories as $directory) {
         $file = $baseDir . $directory . $className . '.php';
-        
+
         if (file_exists($file)) {
             require_once $file;
             return; // Stop searching once found
@@ -54,8 +54,8 @@ if (file_exists('config/configdb.php')) {
 // =================================================================================
 
 // Lấy tham số mặc định
-$controllerParam = $_GET['controller'] ?? 'product';
-$actionParam = $_GET['action'] ?? 'list';
+$controllerParam = $_GET['controller'] ?? 'home';
+$actionParam = $_GET['action'] ?? 'homePage';
 
 // Nếu chưa đăng nhập, chuyển hướng đến trang login
 if (!isset($_SESSION['user_id']) && $controllerParam !== 'login') {
@@ -72,16 +72,16 @@ $ctrl = null;
 // Khởi tạo Controller tương ứng
 switch ($controllerParam) {
     case 'login': // Xử lý đăng nhập
-        $ctrl = new LoginController(); 
+        $ctrl = new LoginController();
         if ($actionParam === 'logout') {
-            $actionParam = 'logout'; 
+            $actionParam = 'logout';
         } elseif ($actionParam !== 'index' && $actionParam !== 'authenticate') {
-             $actionParam = 'index'; 
+            $actionParam = 'index';
         }
         break;
 
     // =======================================================
-    // ** THÊM: ROUTING CHO TRANG PROFILE **
+// ** THÊM: ROUTING CHO TRANG PROFILE **
     // =======================================================
     case 'profile':
         $ctrl = new ProfileController();
@@ -90,50 +90,53 @@ switch ($controllerParam) {
             $actionParam = 'index';
         }
         break;
-    
+
     // --- Các Controller cần đăng nhập mới truy cập được ---
-    case 'category': 
-        $ctrl = new CategoryController(); 
+    case 'category':
+        $ctrl = new CategoryController();
         break;
 
-    case 'product':  
-        $ctrl = new ProductController(); 
+    case 'product':
+        $ctrl = new ProductController();
         break;
 
-    case 'account':  
-        $ctrl = new AccountController(); 
+    case 'account':
+        $ctrl = new AccountController();
         break;
 
-    case 'role':     
-        $ctrl = new RoleController(); 
+    case 'role':
+        $ctrl = new RoleController();
         break;
 
-    case 'employee': 
-        $ctrl = new EmployeeController(); 
+    case 'employee':
+        $ctrl = new EmployeeController();
         break;
 
-    case 'customer': 
-        $ctrl = new CustomerController(); 
+    case 'customer':
+        $ctrl = new CustomerController();
         break;
 
-    case 'provide':  
-        $ctrl = new ProvideController(); 
+    case 'provide':
+        $ctrl = new ProvideController();
         break;
 
-    case 'import':   
-        $ctrl = new ImportController(); 
+    case 'import':
+        $ctrl = new ImportController();
         break;
 
     case 'import_detail':
         $ctrl = new ImportDetailController();
         break;
 
-    case 'invoice':  
-        $ctrl = new InvoiceController(); 
+    case 'invoice':
+        $ctrl = new InvoiceController();
         break;
 
     case 'invoice_detail':
         $ctrl = new InvoiceDetailController();
+        break;
+    case 'home':
+        
         break;
 
     default:
@@ -153,11 +156,10 @@ $data = [];     // Biến chứa dữ liệu truyền vào View
 
 switch ($actionParam) {
     // --- Xử lý riêng cho Login & Profile ---
-    case 'index': 
-        if ($controllerParam === 'login') {
-            $data = $ctrl->index();
-            $viewFile = "views/login.php"; 
-            break;
+    case 'index': // Action mặc định cho trang chủ
+        // Nếu controller có hàm index thì gọi nó (để xử lý logic nếu có)
+       if ($controllerParam === 'home') {
+            $viewFile = "views/home/homePage.php";
         }
         // Xử lý index cho Profile
         if ($controllerParam === 'profile') {
@@ -165,23 +167,23 @@ switch ($actionParam) {
             $viewFile = "views/profile/profile.php"; // SỬA ĐỔI TÊN FILE
             break;
         }
-    
-    case 'authenticate': 
+
+    case 'authenticate':
         if ($controllerParam === 'login' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-             $ctrl->authenticate($_POST);
-             exit; 
+            $ctrl->authenticate($_POST);
+            exit;
         }
         break;
     case 'logout':
         if ($controllerParam === 'login') {
-             $ctrl->logout();
-             exit;
+            $ctrl->logout();
+            exit;
         }
         break;
-    
+
     case 'edit_password':
         if ($controllerParam === 'profile' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-            $ctrl->edit_password($_POST);
+$ctrl->edit_password($_POST);
             header("Location: " . BASE_URL . "index.php?controller=profile&action=index");
             exit;
         }
@@ -220,7 +222,7 @@ switch ($actionParam) {
             if (method_exists($ctrl, 'getAddData')) {
                 $data = $ctrl->getAddData();
             }
-            
+
             $item = $ctrl->getById($id);
             if (!empty($item)) {
                 $data['item'] = $item;
@@ -237,11 +239,11 @@ switch ($actionParam) {
     case 'unlock':
         $id = $_GET['id'] ?? null;
         $page = $_GET['page'] ?? 1;
-        
+
         if ($id && method_exists($ctrl, $actionParam)) {
             $ctrl->$actionParam($id);
         }
-        
+
         if (!headers_sent()) {
             header("Location: " . BASE_URL . "index.php?controller=$controllerParam&action=list&page=$page");
             exit;
@@ -279,13 +281,12 @@ if (!empty($data) && is_array($data)) {
 if (file_exists('mains/main.php')) {
     require_once 'mains/main.php';
 } else {
-    // Fallback: If no layout exists, run the sub-view directly
+// Fallback: If no layout exists, run the sub-view directly
     if (file_exists($viewFile)) {
         require_once $viewFile;
     } else {
         if (!empty($viewFile)) {
-             echo "Error: View file not found: $viewFile";
+            echo "Error: View file not found: $viewFile";
         }
     }
 }
-?>

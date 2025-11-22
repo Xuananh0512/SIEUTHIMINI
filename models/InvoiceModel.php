@@ -87,8 +87,16 @@ class InvoiceModel extends Database {
     }
     
     // =======================================================
-    // ** HÀM HỖ TRỢ TỒN KHO (Cần cho việc trừ tồn khi ẩn HD) **
+    // ** BỔ SUNG: HÀM RESTORE (Khôi phục hóa đơn) **
     // =======================================================
+    public function restore($maHD) {
+        $sql = "UPDATE hoadon SET trangThai=1 WHERE maHD=?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("i", $maHD);
+        return $stmt->execute();
+    }
+    
+    // --- HÀM HỖ TRỢ TỒN KHO (Cần cho việc trừ/cộng tồn kho trong Service) ---
     public function getExistingStock($maSP) {
         $sql = "SELECT soLuongTon FROM sanpham WHERE maSP=?";
         $stmt = $this->conn->prepare($sql);
