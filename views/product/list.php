@@ -1,28 +1,21 @@
 <div class="d-flex justify-content-between pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">Danh sách Sản Phẩm</h1>
-    <a href="index.php?controller=product&action=add" class="btn btn-primary">+ Thêm mới</a>
+    <a href="index.php?controller=product&action=add" class="btn btn-primary">
+        <i class="fa-solid fa-plus"></i> Thêm mới
+    </a>
 </div>
 
 <?php 
-// Controller đã trả về các biến $products, $total_pages, $current_page, $total_records
-// $products là danh sách sản phẩm đã được lọc theo trang.
-$products = $products ?? []; 
-$total_pages = $total_pages ?? 1;
-$current_page = $current_page ?? 1;
-$total_records = $total_records ?? 0;
-$controller = 'product'; 
-$action = 'list';
-// Lấy các biến tìm kiếm trả về từ Controller
+// Khởi tạo biến tìm kiếm tránh lỗi undefined
 $search_name = $search_name ?? '';
 $price_min   = $price_min ?? '';
 $price_max   = $price_max ?? '';
 
-// Giữ lại tham số tìm kiếm khi chuyển trang
+// Giữ lại tham số tìm kiếm cho phân trang
 $query_params = $_GET;
 unset($query_params['page']); 
 $query_string = http_build_query($query_params);
 ?>
-
 
 <div class="card mb-4 bg-light">
     <div class="card-body">
@@ -61,6 +54,7 @@ $query_string = http_build_query($query_params);
         </form>
     </div>
 </div>
+
 <div class="table-responsive">
     <table class="table table-bordered table-striped align-middle">
         <thead class="table-dark">
@@ -78,10 +72,22 @@ $query_string = http_build_query($query_params);
         </thead>
         <tbody>
             <?php if(isset($products) && is_array($products) && count($products) > 0): ?>
-                <?php foreach ($products as $row): ?>
-                <tr>
+                <?php foreach ($products as $row): 
+                    // Kiểm tra trạng thái (0 là ẩn, 1 là hiện)
+                    $trangThai = isset($row['trangThai']) ? $row['trangThai'] : 1;
+                    $isHidden = ($trangThai == 0);
+                ?>
+                <tr class="<?= $isHidden ? 'table-secondary text-muted' : '' ?>" 
+                    style="<?= $isHidden ? 'opacity: 0.75;' : '' ?>">
+                    
                     <td>SP<?= $row['maSP'] ?></td>
-                    <td class="fw-bold"><?= $row['tenSP'] ?></td>
+                    
+                    <td class="fw-bold">
+                        <?= $row['tenSP'] ?>
+                        <?php if($isHidden): ?>
+                            <span class="badge bg-secondary ms-1" style="font-size: 0.7em;">Đã ẩn</span>
+                        <?php endif; ?>
+                    </td>
                     
                     <td><span class="badge bg-info text-dark"><?= $row['tenDM'] ?? '---' ?></span></td>
                     <td><small><?= $row['tenNCC'] ?? '---' ?></small></td>
@@ -96,10 +102,21 @@ $query_string = http_build_query($query_params);
                     </td>
                     <td><?= $row['donViTinh'] ?></td>
                     <td><?= !empty($row['hanSuDung']) ? date('d/m/Y', strtotime($row['hanSuDung'])) : '' ?></td>
+                    
                     <td>
                         <div class="btn-group" role="group">
-                            <a href="index.php?controller=product&action=edit&id=<?= $row['maSP'] ?>" class="btn btn-sm btn-warning">Sửa</a>
-                            <a href="index.php?controller=product&action=delete&id=<?= $row['maSP'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Xóa sản phẩm này?');">Xóa</a>
+                            <a href="index.php?controller=product&action=edit&id=<?= $row['maSP'] ?>" 
+                               class="btn btn-sm btn-warning">Sửa</a>
+                            
+                            <?php if($isHidden): ?>
+                                <a href="index.php?controller=product&action=restore&id=<?= $row['maSP'] ?>" 
+                                   class="btn btn-sm btn-success" 
+                                   onclick="return confirm('Hiển thị lại sản phẩm này?');">Hiện</a>
+                            <?php else: ?>
+                                <a href="index.php?controller=product&action=delete&id=<?= $row['maSP'] ?>" 
+                                   class="btn btn-sm btn-danger" 
+                                   onclick="return confirm('Bạn có chắc muốn ẩn sản phẩm này?');">Ẩn</a>
+                            <?php endif; ?>
                         </div>
                     </td>
                 </tr>
@@ -110,10 +127,6 @@ $query_string = http_build_query($query_params);
         </tbody>
     </table>
 </div>
-
-
-<div class="table-responsive">
-    </div>
 
 <div class="d-flex justify-content-between align-items-center mt-4">
     <div class="text-muted">

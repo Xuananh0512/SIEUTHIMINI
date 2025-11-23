@@ -132,8 +132,7 @@ switch ($controllerParam) {
     case 'invoice_detail':
         $ctrl = new InvoiceDetailController();
         break;
-    case 'home':
-        break;
+ 
     case 'report':
         $ctrl = new ReportController();
         // Cần xử lý các action đặc biệt cho báo cáo
@@ -146,6 +145,9 @@ switch ($controllerParam) {
             // Nếu Action không hợp lệ, mặc định về báo cáo doanh thu
             $actionParam = 'revenue'; 
         }
+        break;
+        case 'home':
+        $ctrl = new HomeController(); // Phải có dòng này
         break;
     default:
         echo "<div style='text-align:center; margin-top:50px;'>";
@@ -171,10 +173,11 @@ switch ($actionParam) {
             break; // THÊM LỆNH BREAK
         }
 
-        // Nếu controller là 'home'
+       // Nếu controller là 'home'
         if ($controllerParam === 'home') {
+            $data = $ctrl->index(); // Gọi hàm lấy dữ liệu thật từ DB
             $viewFile = "views/home/homePage.php";
-            break; // THÊM LỆNH BREAK
+            break; 
         }
         
         // Xử lý index cho Profile

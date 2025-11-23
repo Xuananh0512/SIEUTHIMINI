@@ -119,7 +119,7 @@ $reset_url = "index.php?controller={$controller}&action={$action}";
                             </span>
                         </td>
                         <td>
-                            <a href="index.php?controller=employee&action=update&id=<?= $row['maNV'] ?>"
+                            <a href="index.php?controller=employee&action=edit&id=<?= $row['maNV'] ?>"
                                 class="btn btn-sm btn-info text-white me-1" title="Sửa">
                                 Sửa
                             </a>

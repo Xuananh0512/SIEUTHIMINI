@@ -4,7 +4,7 @@ class Database {
     private $host = "localhost";
     private $user = "root";        // User mặc định của XAMPP
     private $pass = "";            // Mật khẩu mặc định của XAMPP là rỗng
-    private $dbname = "qlstmn";    // Tên CSDL chính xác trong ảnh bạn gửi
+    private $dbname = "qlstmnDB";    // Tên CSDL chính xác trong ảnh bạn gửi
     
     public $conn;
 
