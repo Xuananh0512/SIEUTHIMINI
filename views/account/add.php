@@ -11,7 +11,7 @@ $roles = $roles ?? [];
 <form method="POST" action="index.php?controller=account&action=add">
     <div class="row mb-3">
         <div class="col-md-6">
-            <label class="form-label">Tên tài khoản (*)</label>
+            <label class="form-label">Tên đăng nhập (*)</label>
             <input type="text" name="tenDangNhap" class="form-control" required>
         </div>
         <div class="col-md-6">
