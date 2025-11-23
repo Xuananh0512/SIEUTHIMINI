@@ -50,11 +50,21 @@ class EmployeeService {
 
     // Thêm vào trong class EmployeeService
 
-    public function checkPhoneExists($sdt) {
-        return $this->model->checkPhoneExists($sdt);
-    }
+   // Dùng cho THÊM MỚI
+public function checkPhoneExists($sdt) {
+    return $this->model->checkPhoneExists($sdt);
+}
 
-    public function checkEmailExists($email) {
-        return $this->model->checkEmailExists($email);
+public function checkEmailExists($email) {
+    return $this->model->checkEmailExists($email);
+}
+
+// Dùng cho SỬA
+public function checkPhoneExistsExcept($sdt, $excludeId) {
+    return $this->model->checkPhoneExistsExcept($sdt, $excludeId);
+}
+
+public function checkEmailExistsExcept($email, $excludeId) {
+    return $this->model->checkEmailExistsExcept($email, $excludeId);
 }
 }

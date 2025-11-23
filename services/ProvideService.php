@@ -34,6 +34,9 @@ class ProvideService {
     public function checkPhoneExists($sdt) {
         return $this->model->checkPhoneExists($sdt);
     }
+    public function checkPhoneExistsExcept($sdt, $excludeId) {
+        return $this->model->checkPhoneExistsExcept($sdt, $excludeId);
+    }
     public function search($keyword) { return $this->model->search($keyword); }
 }
 ?>

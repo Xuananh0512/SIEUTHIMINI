@@ -53,12 +53,12 @@ class CustomerService {
 
     // Thêm vào trong class CustomerService
 
-    public function checkPhoneExists($sdt) {
-        return $this->model->checkPhoneExists($sdt);
-    }
+    public function checkPhoneExistsExcept($sdt, $excludeId) {
+    return $this->model->checkPhoneExistsExcept($sdt, $excludeId);
+}
 
-    public function checkEmailExists($email) {
-        return $this->model->checkEmailExists($email);
-    }
+public function checkEmailExistsExcept($email, $excludeId) {
+    return $this->model->checkEmailExistsExcept($email, $excludeId);
+}
 }
 ?>
