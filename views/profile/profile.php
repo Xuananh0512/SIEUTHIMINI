@@ -22,7 +22,7 @@ $account = $account ?? [];
                 <p><strong>Địa chỉ:</strong> <?= $employee['diaChi'] ?? 'N/A' ?></p>
                 <p><strong>Điện thoại:</strong> <?= $employee['soDienThoai'] ?? 'N/A' ?></p>
                 <p><strong>Email:</strong> <?= $employee['email'] ?? 'N/A' ?></p>
-                <!-- <p><strong>Ngày vào làm:</strong> <?= $employee['ngayVaoLam'] ?? 'N/A' ?></p> -->
+                <p><strong>Ngày vào làm:</strong> <?= $employee['ngayVaoLam'] ?? 'N/A' ?></p>
             </div>
         </div>
     </div>
