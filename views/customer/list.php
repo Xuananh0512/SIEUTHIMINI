@@ -19,6 +19,7 @@ $action = 'list';
             <th>Mã KH</th>
             <th>Họ Tên</th>
             <th>SĐT</th>
+            <th>Email</th> 
             <th>Địa chỉ</th>
             <th>Điểm TL</th>
             <th>Trạng thái</th> 
@@ -32,6 +33,7 @@ $action = 'list';
                 <td><?= $row['maKH'] ?></td>
                 <td class="fw-bold"><?= $row['hoTenKH'] ?></td>
                 <td><?= $row['soDienThoai'] ?></td>
+                <td><?= $row['email'] ?? 'N/A' ?></td>
                 <td><?= $row['diaChi'] ?></td>
                 <td class="text-center"><span class="badge bg-warning text-dark"><?= $row['diemTichLuy'] ?></span></td>
                 
@@ -55,7 +57,7 @@ $action = 'list';
             </tr>
             <?php endforeach; ?>
         <?php else: ?>
-            <tr><td colspan="7" class="text-center text-muted">Không tìm thấy khách hàng nào.</td></tr>
+            <tr><td colspan="8" class="text-center text-muted">Không tìm thấy khách hàng nào.</td></tr>
         <?php endif; ?>
     </tbody>
 </table>
