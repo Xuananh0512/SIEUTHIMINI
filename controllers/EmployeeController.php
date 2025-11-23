@@ -24,12 +24,55 @@ class EmployeeController {
     // 2. HÀM XỬ LÝ LƯU KHI THÊM MỚI (POST)
     // index.php gọi: $ctrl->add($_POST);
     // =======================================================
+    // File: EmployeeController.php
+
     public function add($data) {
-        // Gọi Service để thêm mới
-        // $data ở đây chính là $_POST được truyền từ index.php
-        $this->service->add($data);
+        // 1. Lấy dữ liệu
+        $sdt = trim($data['soDienThoai'] ?? '');
+        $email = trim($data['email'] ?? '');
         
-        // Không cần header location ở đây vì index.php đã xử lý redirect rồi
+        // Biến chứa lỗi
+        $error = null;
+
+        // --- VALIDATION ---
+        if (empty($sdt)) {
+            $error = "Vui lòng nhập số điện thoại.";
+        } elseif (!preg_match('/^0[0-9]{9,10}$/', $sdt)) {
+            $error = "Số điện thoại không hợp lệ (Phải bắt đầu bằng 0 và có 10-11 số).";
+        } elseif ($this->service->checkPhoneExists($sdt)) {
+            $error = "Số điện thoại này đã tồn tại trên hệ thống.";
+        } elseif (empty($email)) {
+            $error = "Vui lòng nhập Email.";
+        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $error = "Định dạng Email không hợp lệ.";
+        } elseif ($this->service->checkEmailExists($email)) {
+            $error = "Email này đã được sử dụng.";
+        }
+
+        // 2. NẾU CÓ LỖI
+        if ($error) {
+            $_SESSION['error'] = $error;
+            $_SESSION['old_data'] = $data; // Lưu lại dữ liệu cũ để điền lại vào form
+            
+            // Quan trọng: Redirect về lại action ADD và dừng code ngay lập tức
+            header("Location: index.php?controller=employee&action=add");
+            exit; 
+        }
+
+        // 3. NẾU KHÔNG CÓ LỖI -> LƯU VÀ VỀ DANH SÁCH
+        try {
+            $this->service->add($data);
+            $_SESSION['success'] = "Thêm nhân viên thành công!";
+            // Xóa dữ liệu cũ nếu có
+            if(isset($_SESSION['old_data'])) unset($_SESSION['old_data']);
+            
+            header("Location: index.php?controller=employee&action=list");
+            exit;
+        } catch (Exception $e) {
+            $_SESSION['error'] = "Lỗi hệ thống: " . $e->getMessage();
+            header("Location: index.php?controller=employee&action=add");
+            exit;
+        }
     }
 
     // =======================================================

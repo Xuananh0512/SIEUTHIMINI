@@ -33,9 +33,57 @@ class ProvideController {
         ];
     }
     
-    public function add($data) {
-        return $this->service->add($data);
+    // Trong file ProvideController.php -> function add()
+
+    // Trong ProvideController.php
+
+public function add($data) {
+    // 1. Lấy và làm sạch dữ liệu
+    $sdt = trim($data['soDienThoai'] ?? '');
+    $ten = trim($data['tenNCC'] ?? '');
+    $diaChi = trim($data['diaChi'] ?? '');
+    
+    $error = null;
+
+    // 2. VALIDATION (Kiểm tra)
+    if (empty($ten)) {
+        $error = "Tên nhà cung cấp không được để trống.";
+    } 
+    // Chỉ kiểm tra SĐT nếu người dùng có nhập
+    elseif (!empty($sdt)) {
+        // Check Regex
+        if (!preg_match('/^0[0-9]{9,10}$/', $sdt)) {
+            $error = "Số điện thoại không hợp lệ (Phải bắt đầu bằng 0 và dài 10-11 số).";
+        } 
+        // Check Trùng lặp (GỌI SERVICE VỪA THÊM)
+        elseif ($this->service->checkPhoneExists($sdt)) {
+            $error = "Số điện thoại này đã được đăng ký cho nhà cung cấp khác.";
+        }
     }
+
+    // 3. XỬ LÝ LỖI
+    if ($error) {
+        $_SESSION['error'] = $error;
+        $_SESSION['old_data'] = $data; // Lưu lại dữ liệu để form không bị trắng trơn
+        
+        // Quay lại trang thêm mới
+        header("Location: index.php?controller=provide&action=add");
+        exit; 
+    }
+
+    // 4. THÀNH CÔNG -> LƯU VÀ VỀ LIST
+    if ($this->service->add($data)) {
+        $_SESSION['success'] = "Thêm nhà cung cấp thành công!";
+        if(isset($_SESSION['old_data'])) unset($_SESSION['old_data']); // Xóa dữ liệu cũ
+        
+        header("Location: index.php?controller=provide&action=list");
+        exit;
+    } else {
+        $_SESSION['error'] = "Có lỗi xảy ra khi lưu dữ liệu.";
+        header("Location: index.php?controller=provide&action=add");
+        exit;
+    }
+}
 
     public function update($id, $data) {
         return $this->service->update($id, $data);
