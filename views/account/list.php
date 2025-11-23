@@ -16,8 +16,8 @@ $action = 'list';
 <table class="table table-striped">
     <thead>
         <tr>
-            <th>ID</th>
-            <th>Username</th>
+            <th>Mã TK</th>
+            <th>Tên đăng nhập</th>
             <th>Nhân viên</th>
             <th>Vai trò</th>
             <th>Trạng thái</th>
