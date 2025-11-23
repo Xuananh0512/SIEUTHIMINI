@@ -22,7 +22,7 @@ $action = 'list';
 ?>
 
 <table class="table table-striped">
-    <thead><tr><th>Mã vai trò</th><th>Tên Vai Trò</th><th>Thao tác</th></tr></thead>
+    <thead><tr><th>Mã vai trò</th><th>Tên vai trò</th><th>Thao tác</th></tr></thead>
     <tbody>
         <?php if (isset($roles) && is_array($roles) && count($roles) > 0): ?>
             <?php foreach ($roles as $row): ?>
