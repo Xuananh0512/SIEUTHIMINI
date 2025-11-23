@@ -1,61 +1,58 @@
-    <?php
+<?php
 class LoginController {
     private $accountModel;
 
     public function __construct() {
-        // Khởi tạo AccountModel để sử dụng các hàm login/getInfo
         $this->accountModel = new AccountModel(); 
     }
 
-    // 1. Hiển thị trang đăng nhập
+    // 1. Hiển thị trang đăng nhập (Giữ nguyên)
     public function index() {
         return [];
     }
 
-    // 2. Xử lý logic đăng nhập (khi form được POST)
+    // 2. Xử lý logic đăng nhập
     public function authenticate($data) {
         $username = $data['username'] ?? '';
         $password = $data['password'] ?? ''; 
         
-        // --- 2.1. Xác thực người dùng ---
-        // Giả định bạn có hàm login trong AccountModel để kiểm tra username/password (MD5)
-        // ** Lưu ý: Nên dùng password_hash() và password_verify() thay vì MD5 trong thực tế **
+        // Kiểm tra trong bảng tài khoản
         $user = $this->accountModel->login($username, MD5($password)); 
 
         if ($user) {
+            // Kiểm tra trạng thái khóa
             if ($user['trangThai'] == 0) {
                  $_SESSION['error'] = "Tài khoản của bạn đã bị khóa hoặc ngừng hoạt động!";
-                 // Quay lại trang login
                  header("Location: " . BASE_URL . "index.php?controller=login&action=index");
                  exit;
             }
             
-            // --- 2.2. Đăng nhập thành công: Lưu thông tin vào Session ---
+            // --- LƯU SESSION ---
             $_SESSION['user_id'] = $user['maNV'];
             $_SESSION['username'] = $user['tenDangNhap'];
             
-            // Lấy tên nhân viên và vai trò để hiển thị trên giao diện
+            // QUAN TRỌNG: Lưu mã vai trò trực tiếp từ bảng tài khoản (1=Admin, 2=NV...)
+            $_SESSION['role_id'] = $user['maVaiTro']; 
+            
+            // Lấy thêm thông tin nhân viên để hiển thị tên đẹp hơn
             $employee = $this->accountModel->getEmployeeInfo($user['maNV']);
             $_SESSION['display_name'] = $employee['hoTenNV'] ?? $username;
             $_SESSION['role_name'] = $employee['tenVaiTro'] ?? 'Người dùng';
             
-            // ✅ FIX: Chuyển hướng về trang chủ (controller=home) sau khi đăng nhập
+            // Chuyển hướng về trang chủ
             header("Location: " . BASE_URL . "index.php?controller=home&action=index");
             exit;
 
         } else {
-            // Đăng nhập thất bại
             $_SESSION['error'] = "Tên đăng nhập hoặc mật khẩu không đúng.";
-            // Quay lại trang login
             header("Location: " . BASE_URL . "index.php?controller=login&action=index");
             exit;
         }
     }
 
-    // 3. Xử lý đăng xuất
+    // 3. Đăng xuất (Giữ nguyên)
     public function logout() {
         session_destroy();
-        // Chuyển hướng về trang login
         header("Location: " . BASE_URL . "index.php?controller=login&action=index");
         exit;
     }

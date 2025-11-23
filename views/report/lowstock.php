@@ -1,5 +1,5 @@
-
 <?php
+// Đảm bảo biến không bị lỗi undefined
 $reportData = $reportData ?? [];
 $threshold = $threshold ?? 5;
 ?>
@@ -17,7 +17,7 @@ $threshold = $threshold ?? 5;
         <input type="hidden" name="controller" value="report">
         <input type="hidden" name="action" value="lowstock">
         <div class="input-group">
-            <input type="number" name="threshold" value="<?= $threshold ?>" min="1" class="form-control" placeholder="Ngưỡng tồn kho" style="width: 150px;">
+            <input type="number" name="threshold" value="<?= $threshold ?>" min="0" class="form-control" placeholder="Ngưỡng tồn kho" style="width: 150px;">
             <span class="input-group-text">sản phẩm</span>
             <button class="btn btn-primary" type="submit">Lọc</button>
         </div>
@@ -25,29 +25,41 @@ $threshold = $threshold ?? 5;
 </div>
 
 <div class="table-responsive">
-    <table class="table table-bordered table-striped table-hover">
+    <table class="table table-bordered table-striped table-hover align-middle">
         <thead class="table-primary">
             <tr>
                 <th>Mã SP</th>
                 <th>Tên Sản Phẩm</th>
                 <th>Đơn Vị Tính</th>
                 <th>Đơn Giá Bán</th>
-                <th>Tồn Kho</th>
+                <th class="text-center">Tồn Kho</th>
             </tr>
         </thead>
         <tbody>
             <?php if (!empty($reportData)): ?>
-                <?php foreach ($reportData as $row): ?>
-                    <tr>
-                        <td><?= $row['maSP'] ?></td>
-                        <td class="fw-bold"><?= $row['tenSP'] ?></td>
+                <?php foreach ($reportData as $row): 
+                    // Xử lý nếu database trả về NULL thì coi là 0
+                    $tonKho = $row['soLuongTon'] ?? 0;
+                ?>
+                    <tr class="<?= $tonKho <= 0 ? 'table-danger' : '' ?>">
+                        <td>SP<?= $row['maSP'] ?></td>
+                        <td class="fw-bold"><?= htmlspecialchars($row['tenSP']) ?></td>
                         <td><?= $row['donViTinh'] ?></td>
                         <td class="text-end"><?= number_format($row['donGiaBan'], 0, ',', '.') ?> đ</td>
-                        <td class="text-center fw-bold text-danger"><?= $row['soLuongTon'] ?></td>
+                        
+                        <td class="text-center fw-bold">
+                            <?php if ($tonKho <= 0): ?>
+                                <span class="badge bg-danger p-2">
+                                    <i class="fa-solid fa-triangle-exclamation"></i> Hết hàng (0)
+                                </span>
+                            <?php else: ?>
+                                <span class="text-danger"><?= $tonKho ?></span>
+                            <?php endif; ?>
+                        </td>
                     </tr>
                 <?php endforeach; ?>
             <?php else: ?>
-                <tr><td colspan="5" class="text-center">Tất cả sản phẩm đều có lượng tồn kho ổn định (trên <?= $threshold ?>).</td></tr>
+                <tr><td colspan="5" class="text-center py-3 text-muted">Tất cả sản phẩm đều có lượng tồn kho ổn định (trên <?= $threshold ?>).</td></tr>
             <?php endif; ?>
         </tbody>
     </table>

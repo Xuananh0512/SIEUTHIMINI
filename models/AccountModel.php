@@ -18,6 +18,7 @@ class AccountModel extends Database
     // =======================================================
     public function getPaginated($limit, $offset)
     {
+        // [SỬA]: Chọn rõ ràng các cột để tránh lỗi
         $sql = "SELECT 
                     tk.*, 
                     nv.hoTenNV, 
@@ -117,10 +118,14 @@ class AccountModel extends Database
         return [];
     }
     
-    // HÀM ĐĂNG NHẬP
+    // =======================================================
+    // [QUAN TRỌNG] HÀM ĐĂNG NHẬP ĐÃ ĐƯỢC SỬA
+    // =======================================================
     public function login($username, $hashedPassword)
     {
-        $sql = "SELECT maTK, maNV, tenDangNhap, trangThai FROM TaiKhoan WHERE tenDangNhap=? AND matKhau=?";
+        // [SỬA]: Thêm cột maVaiTro vào câu lệnh SELECT
+        $sql = "SELECT maTK, maNV, tenDangNhap, trangThai, maVaiTro FROM TaiKhoan WHERE tenDangNhap=? AND matKhau=?";
+        
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("ss", $username, $hashedPassword);
         $stmt->execute();
@@ -132,7 +137,7 @@ class AccountModel extends Database
     {
         $sql = "SELECT nv.hoTenNV, vt.tenVaiTro 
              FROM NhanVien nv 
-             JOIN VaiTro vt ON nv.maVaiTro = vt.maVaiTro
+             LEFT JOIN VaiTro vt ON nv.maVaiTro = vt.maVaiTro
              WHERE nv.maNV = ?";
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("i", $maNV);
@@ -145,7 +150,7 @@ class AccountModel extends Database
     // =======================================================
     public function getByEmployeeId($maNV)
     {
-        $sql = "SELECT maTK, tenDangNhap, trangThai, matKhau FROM TaiKhoan WHERE maNV=?";
+        $sql = "SELECT maTK, tenDangNhap, trangThai, matKhau, maVaiTro FROM TaiKhoan WHERE maNV=?";
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("i", $maNV);
         $stmt->execute();

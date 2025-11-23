@@ -125,5 +125,13 @@ class Productmodel extends Database
         $stmt->execute();
         return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
+    public function countByCategoryId($categoryId) {
+    $sql = "SELECT COUNT(*) AS total FROM sanpham WHERE maDM = ?";
+    $stmt = $this->conn->prepare($sql);
+    $stmt->execute([$categoryId]);
+    $row = $stmt->fetch();
+    return $row['total'] ?? 0;
+}
+
 }
 ?>

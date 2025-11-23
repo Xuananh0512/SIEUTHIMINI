@@ -1,21 +1,22 @@
-<div class="d-flex justify-content-between pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">Danh sách Sản Phẩm</h1>
-    <a href="index.php?controller=product&action=add" class="btn btn-primary">
-        <i class="fa-solid fa-plus"></i> Thêm mới
-    </a>
-</div>
-
 <?php 
-// Khởi tạo biến tìm kiếm tránh lỗi undefined
+// Các biến tìm kiếm (giữ nguyên để không lỗi)
 $search_name = $search_name ?? '';
 $price_min   = $price_min ?? '';
 $price_max   = $price_max ?? '';
 
-// Giữ lại tham số tìm kiếm cho phân trang
+// Giữ tham số URL phân trang
 $query_params = $_GET;
 unset($query_params['page']); 
 $query_string = http_build_query($query_params);
 ?>
+
+<div class="d-flex justify-content-between pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Danh sách Sản Phẩm</h1>
+    
+    <a href="index.php?controller=product&action=add" class="btn btn-primary">
+        <i class="fa-solid fa-plus"></i> Thêm mới
+    </a>
+</div>
 
 <div class="card mb-4 bg-light">
     <div class="card-body">
@@ -106,17 +107,24 @@ $query_string = http_build_query($query_params);
                     <td>
                         <div class="btn-group" role="group">
                             <a href="index.php?controller=product&action=edit&id=<?= $row['maSP'] ?>" 
-                               class="btn btn-sm btn-warning">Sửa</a>
+                               class="btn btn-sm btn-warning">
+                                Sửa
+                            </a>
                             
                             <?php if($isHidden): ?>
                                 <a href="index.php?controller=product&action=restore&id=<?= $row['maSP'] ?>" 
                                    class="btn btn-sm btn-success" 
-                                   onclick="return confirm('Hiển thị lại sản phẩm này?');">Hiện</a>
+                                   onclick="return confirm('Hiển thị lại sản phẩm này?');">
+                                Hiện
+                                </a>
                             <?php else: ?>
                                 <a href="index.php?controller=product&action=delete&id=<?= $row['maSP'] ?>" 
                                    class="btn btn-sm btn-danger" 
-                                   onclick="return confirm('Bạn có chắc muốn ẩn sản phẩm này?');">Ẩn</a>
+                                   onclick="return confirm('Bạn có chắc muốn ẩn sản phẩm này?');">
+                                    Ẩn
+                                </a>
                             <?php endif; ?>
+                            
                         </div>
                     </td>
                 </tr>

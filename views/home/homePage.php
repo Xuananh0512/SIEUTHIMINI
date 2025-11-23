@@ -1,11 +1,14 @@
-<div class="dashboard">
+<?php
+// Kiểm tra lại biến $isAdmin cho chắc chắn (được truyền từ index.php sang)
+$isAdmin = (isset($_SESSION['role_id']) && $_SESSION['role_id'] == 1);
+?>
 
+<div class="dashboard">
     <div class="dashboard-banner mb-4">
-        <img src="https://images.unsplash.com/photo-1506619216599-9d16d0903dfd?q=80&w=1500&auto=format&fit=crop"
-             class="banner-img" alt="Dashboard Banner">
+        <img src="https://images.unsplash.com/photo-1506619216599-9d16d0903dfd?q=80&w=1500&auto=format&fit=crop" class="banner-img" alt="Banner">
         <div class="banner-text">
-            <h2>Chào mừng đến Hệ thống Quản Lý Siêu Thị Mini</h2>
-            <p>Quản lý linh hoạt • Giao diện hiện đại • Hiệu suất tối ưu</p>
+            <h2>Chào mừng <?= $_SESSION['display_name'] ?? 'bạn' ?> trở lại!</h2>
+            <p>Vai trò hiện tại: <strong><?= $_SESSION['role_name'] ?? 'Nhân viên' ?></strong></p>
         </div>
     </div>
 
@@ -26,31 +29,43 @@
             </div>
         </div>
 
-        <div class="col-lg-3 col-md-6">
-            <div class="stat-card stat-yellow">
-                <i class="fa-solid fa-users"></i>
-                <h4>Nhân viên</h4>
-                <p><?= number_format($countEmployee ?? 0) ?></p>
+        <?php if ($isAdmin): ?>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card stat-yellow">
+                    <i class="fa-solid fa-users"></i>
+                    <h4>Nhân viên</h4>
+                    <p><?= number_format($countEmployee ?? 0) ?></p>
+                </div>
             </div>
-        </div>
 
-        <div class="col-lg-3 col-md-6">
-            <div class="stat-card stat-red">
-                <i class="fa-solid fa-coins"></i>
-                <h4>Doanh Thu</h4>
-                <p><?= number_format($totalRevenue ?? 0) ?>đ</p>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card stat-red">
+                    <i class="fa-solid fa-coins"></i>
+                    <h4>Doanh Thu</h4>
+                    <p><?= number_format($totalRevenue ?? 0) ?>đ</p>
+                </div>
             </div>
-        </div>
+        <?php endif; ?>
     </div>
 
     <div class="row g-4">
-
+        <?php if ($isAdmin): ?>
         <div class="col-lg-8">
             <div class="box bg-white p-3 rounded shadow-sm">
                 <h5 class="mb-3">Biểu đồ doanh thu năm <?= date('Y') ?></h5>
                 <canvas id="revenueChart" style="width:100%; height:350px;"></canvas>
             </div>
         </div>
+        <?php else: ?>
+        <div class="col-lg-8">
+            <div class="box bg-white p-5 rounded shadow-sm text-center">
+                <i class="fa-solid fa-store text-muted" style="font-size: 80px; margin-bottom: 20px;"></i>
+                <h4>Chúc bạn một ngày làm việc hiệu quả!</h4>
+                <p class="text-muted">Hãy kiểm tra kho hàng và tạo hóa đơn cho khách.</p>
+                <a href="index.php?controller=invoice&action=add" class="btn btn-primary mt-3">Tạo hóa đơn ngay</a>
+            </div>
+        </div>
+        <?php endif; ?>
 
         <div class="col-lg-4">
             <div class="box bg-white p-3 rounded shadow-sm">
@@ -75,20 +90,16 @@
                 </ul>
             </div>
         </div>
-
     </div>
-
 </div>
 
+<?php if ($isAdmin): ?>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <script>
-    // Dữ liệu từ PHP truyền sang JS
     const revenueData = <?= $chartData ?? '[]' ?>;
-
     const ctx = document.getElementById('revenueChart').getContext('2d');
     new Chart(ctx, {
-        type: 'line', // Dạng biểu đồ đường
+        type: 'line', 
         data: {
             labels: ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12'],
             datasets: [{
@@ -98,20 +109,13 @@
                 backgroundColor: 'rgba(220, 53, 69, 0.1)',
                 borderWidth: 2,
                 fill: true,
-                tension: 0.4 // Độ cong của đường
+                tension: 0.4
             }]
         },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: { position: 'top' },
-            },
-            scales: {
-                y: { beginAtZero: true }
-            }
-        }
+        options: { responsive: true, plugins: { legend: { position: 'top' } }, scales: { y: { beginAtZero: true } } }
     });
 </script>
+<?php endif; ?>
 
 <style>
     .dashboard { animation: fadeIn 0.5s ease; }
