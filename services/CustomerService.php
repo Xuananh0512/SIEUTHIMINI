@@ -49,5 +49,15 @@ class CustomerService {
     }
     
     public function search($keyword) { return $this->model->search($keyword); }
+
+    // Thêm vào trong class CustomerService
+
+    public function checkPhoneExists($sdt) {
+        return $this->model->checkPhoneExists($sdt);
+    }
+
+    public function checkEmailExists($email) {
+        return $this->model->checkEmailExists($email);
+    }
 }
 ?>

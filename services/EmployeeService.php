@@ -47,4 +47,14 @@ class EmployeeService {
     public function delete($id) { return $this->model->delete($id); }
     public function restore($id) { return $this->model->restore($id); }
     public function search($key) { return $this->model->search($key); }
+
+    // Thêm vào trong class EmployeeService
+
+    public function checkPhoneExists($sdt) {
+        return $this->model->checkPhoneExists($sdt);
+    }
+
+    public function checkEmailExists($email) {
+        return $this->model->checkEmailExists($email);
+}
 }

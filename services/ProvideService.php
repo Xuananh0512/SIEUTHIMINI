@@ -31,7 +31,9 @@ class ProvideService {
     public function restore($id) {
         return $this->model->restore($id);
     }
-    
+    public function checkPhoneExists($sdt) {
+        return $this->model->checkPhoneExists($sdt);
+    }
     public function search($keyword) { return $this->model->search($keyword); }
 }
 ?>
