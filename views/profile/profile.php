@@ -31,7 +31,7 @@ $account = $account ?? [];
         <div class="card mb-4 shadow-sm">
             <div class="card-header bg-dark text-white fw-bold">Thông tin Tài khoản</div>
             <div class="card-body">
-                <p><strong>Username:</strong> <span class="badge bg-secondary"><?= $account['tenDangNhap'] ?? 'N/A' ?></span></p>
+                <p><strong>Tên tài khoản:</strong> <span class="badge bg-secondary"><?= $account['tenDangNhap'] ?? 'N/A' ?></span></p>
                 <p><strong>Trạng thái:</strong> 
                     <?php if (($account['trangThai'] ?? 0) == 1): ?>
                         <span class="badge bg-success">Hoạt động</span>
