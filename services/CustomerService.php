@@ -21,18 +21,19 @@ class CustomerService {
     }
 
     public function update($id, $data) {
-        // Truyền thêm trạng thái trangThai (giả định từ form edit)
-        return $this->model->update(
-            $id,
-            $data['hoTenKH'], 
-            $data['soDienThoai'], 
-            $data['diaChi'], 
-            $data['ngaySinh'], 
-            $data['email'],
-            $data['diemTichLuy'],
-            $data['trangThai']
-        );
-    }
+   
+    // maKH, hoTenKH, soDienThoai, diaChi, ngaySinh, email, diemTichLuy, trangThai
+    return $this->model->update(
+        $id,
+        $data['hoTenKH'], 
+        $data['soDienThoai'], 
+        $data['diaChi'], 
+        $data['ngaySinh'], 
+        $data['email'],
+        $data['diemTichLuy'],
+        $data['trangThai']
+    );
+}
 
     // =======================================================
     // ** THAY THẾ: HÀM DELETE THÀNH DISABLE **
