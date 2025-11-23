@@ -11,11 +11,11 @@ $roles = $roles ?? [];
 <form method="POST" action="index.php?controller=account&action=add">
     <div class="row mb-3">
         <div class="col-md-6">
-            <label class="form-label">Username (*)</label>
+            <label class="form-label">Tên tài khoản (*)</label>
             <input type="text" name="tenDangNhap" class="form-control" required>
         </div>
         <div class="col-md-6">
-            <label class="form-label">Password (*)</label>
+            <label class="form-label">Mật khẩu (*)</label>
             <input type="password" name="matKhau" class="form-control" required>
         </div>
     </div>
