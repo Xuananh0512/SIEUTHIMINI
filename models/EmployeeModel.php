@@ -201,21 +201,41 @@ class EmployeeModel extends Database {
 
     // Thêm vào trong class EmployeeModel
 
-// Kiểm tra trùng số điện thoại
-    public function checkPhoneExists($sdt) {
-        $sql = "SELECT COUNT(*) FROM nhanvien WHERE soDienThoai = ?";
+    // Kiểm tra trùng số điện thoại (dùng cho THÊM MỚI)
+public function checkPhoneExists($sdt) {
+    $sql = "SELECT COUNT(*) FROM nhanvien WHERE soDienThoai = ?";
+    $stmt = $this->conn->prepare($sql);
+    $stmt->bind_param("s", $sdt);
+    $stmt->execute();
+    $row = $stmt->get_result()->fetch_row();
+    return $row[0] > 0;
+}
+
+    // Kiểm tra trùng Email (dùng cho THÊM MỚI)
+    public function checkEmailExists($email) {
+        $sql = "SELECT COUNT(*) FROM nhanvien WHERE email = ?";
         $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param("s", $sdt);
+        $stmt->bind_param("s", $email);
         $stmt->execute();
         $row = $stmt->get_result()->fetch_row();
         return $row[0] > 0;
     }
 
-    // Kiểm tra trùng Email
-    public function checkEmailExists($email) {
-        $sql = "SELECT COUNT(*) FROM nhanvien WHERE email = ?";
+    // Kiểm tra trùng số điện thoại (loại trừ ID hiện tại - dùng cho SỬA)
+    public function checkPhoneExistsExcept($sdt, $excludeId) {
+        $sql = "SELECT COUNT(*) FROM nhanvien WHERE soDienThoai = ? AND maNV != ?";
         $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param("s", $email);
+        $stmt->bind_param("si", $sdt, $excludeId);
+        $stmt->execute();
+        $row = $stmt->get_result()->fetch_row();
+        return $row[0] > 0;
+    }
+
+    // Kiểm tra trùng Email (loại trừ ID hiện tại - dùng cho SỬA)
+    public function checkEmailExistsExcept($email, $excludeId) {
+        $sql = "SELECT COUNT(*) FROM nhanvien WHERE email = ? AND maNV != ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("si", $email, $excludeId);
         $stmt->execute();
         $row = $stmt->get_result()->fetch_row();
         return $row[0] > 0;
