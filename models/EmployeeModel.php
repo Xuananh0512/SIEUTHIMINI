@@ -198,4 +198,26 @@ class EmployeeModel extends Database {
         }
         return [];
     }
+
+    // Thêm vào trong class EmployeeModel
+
+// Kiểm tra trùng số điện thoại
+    public function checkPhoneExists($sdt) {
+        $sql = "SELECT COUNT(*) FROM nhanvien WHERE soDienThoai = ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("s", $sdt);
+        $stmt->execute();
+        $row = $stmt->get_result()->fetch_row();
+        return $row[0] > 0;
+    }
+
+    // Kiểm tra trùng Email
+    public function checkEmailExists($email) {
+        $sql = "SELECT COUNT(*) FROM nhanvien WHERE email = ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $row = $stmt->get_result()->fetch_row();
+        return $row[0] > 0;
+    }
 }
