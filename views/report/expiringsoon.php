@@ -42,7 +42,7 @@ $days = $days ?? 30;
                         <td><?= $row['maSP'] ?></td>
                         <td class="fw-bold"><?= $row['tenSP'] ?></td>
                         <td><?= $row['donViTinh'] ?></td>
-                        <td class="text-center fw-bold text-danger"><?= $row['soLuongTon'] ?></td>
+                        <td class=" fw-bold text-danger"><?= $row['soLuongTon'] ?></td>
                         <td class="text-danger fw-bold"><?= date('d/m/Y', strtotime($row['hanSuDung'])) ?></td>
                     </tr>
                 <?php endforeach; ?>
