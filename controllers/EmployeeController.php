@@ -27,63 +27,130 @@ class EmployeeController {
     // File: EmployeeController.php
 
     public function add($data) {
-        // 1. Lấy dữ liệu
-        $sdt = trim($data['soDienThoai'] ?? '');
-        $email = trim($data['email'] ?? '');
-        
-        // Biến chứa lỗi
-        $error = null;
+    // 1. Lấy dữ liệu và làm sạch
+    $sdt = trim($data['soDienThoai'] ?? '');
+    $email = trim($data['email'] ?? '');
+    $hoTen = trim($data['hoTenNV'] ?? '');
+    
+    $error = null;
 
-        // --- VALIDATION ---
-        if (empty($sdt)) {
-            $error = "Vui lòng nhập số điện thoại.";
-        } elseif (!preg_match('/^0[0-9]{9,10}$/', $sdt)) {
-            $error = "Số điện thoại không hợp lệ (Phải bắt đầu bằng 0 và có 10-11 số).";
-        } elseif ($this->service->checkPhoneExists($sdt)) {
-            $error = "Số điện thoại này đã tồn tại trên hệ thống.";
-        } elseif (empty($email)) {
-            $error = "Vui lòng nhập Email.";
-        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $error = "Định dạng Email không hợp lệ.";
-        } elseif ($this->service->checkEmailExists($email)) {
-            $error = "Email này đã được sử dụng.";
-        }
-
-        // 2. NẾU CÓ LỖI
-        if ($error) {
-            $_SESSION['error'] = $error;
-            $_SESSION['old_data'] = $data; // Lưu lại dữ liệu cũ để điền lại vào form
-            
-            // Quan trọng: Redirect về lại action ADD và dừng code ngay lập tức
-            header("Location: index.php?controller=employee&action=add");
-            exit; 
-        }
-
-        // 3. NẾU KHÔNG CÓ LỖI -> LƯU VÀ VỀ DANH SÁCH
-        try {
-            $this->service->add($data);
-            $_SESSION['success'] = "Thêm nhân viên thành công!";
-            // Xóa dữ liệu cũ nếu có
-            if(isset($_SESSION['old_data'])) unset($_SESSION['old_data']);
-            
-            header("Location: index.php?controller=employee&action=list");
-            exit;
-        } catch (Exception $e) {
-            $_SESSION['error'] = "Lỗi hệ thống: " . $e->getMessage();
-            header("Location: index.php?controller=employee&action=add");
-            exit;
-        }
+    // 2. VALIDATION
+    // Kiểm tra tên
+    if (empty($hoTen)) {
+        $error = "Vui lòng nhập họ tên nhân viên.";
     }
+    // Kiểm tra SĐT: Rỗng? Regex? Trùng?
+    elseif (empty($sdt)) {
+        $error = "Vui lòng nhập số điện thoại.";
+    } elseif (!preg_match('/^0[0-9]{9,10}$/', $sdt)) {
+        $error = "Số điện thoại không hợp lệ (Phải bắt đầu bằng 0 và có 10-11 số).";
+    } elseif ($this->service->checkPhoneExists($sdt)) {
+        $error = "Số điện thoại này đã tồn tại trên hệ thống.";
+    }
+    // Kiểm tra Email
+    elseif (empty($email)) {
+        $error = "Vui lòng nhập Email.";
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $error = "Định dạng Email không hợp lệ.";
+    } elseif ($this->service->checkEmailExists($email)) {
+        $error = "Email này đã được sử dụng.";
+    }
+
+    // 3. XỬ LÝ KHI CÓ LỖI
+    if ($error) {
+        $_SESSION['error'] = $error;
+        $_SESSION['old_data'] = $data;
+        
+        header("Location: index.php?controller=employee&action=add");
+        exit; 
+    }
+
+    // 4. NẾU HỢP LỆ -> LƯU
+    try {
+        $this->service->add($data);
+        $_SESSION['success'] = "Thêm nhân viên thành công!";
+        
+        if(isset($_SESSION['old_data'])) unset($_SESSION['old_data']);
+        
+        header("Location: index.php?controller=employee&action=list");
+        exit;
+    } catch (Exception $e) {
+        $_SESSION['error'] = "Lỗi hệ thống: " . $e->getMessage();
+        $_SESSION['old_data'] = $data;
+        header("Location: index.php?controller=employee&action=add");
+        exit;
+    }
+}
 
     // =======================================================
     // 3. HÀM XỬ LÝ LƯU KHI CẬP NHẬT (POST)
     // index.php gọi: $ctrl->update($id, $_POST);
     // =======================================================
     public function update($id, $data) {
-        // Gọi service update
-        // index.php truyền $id và $_POST vào đây
-        $this->service->update($id, $data);
+        // 1. Lấy dữ liệu và làm sạch
+        $sdt = trim($data['soDienThoai'] ?? '');
+        $email = trim($data['email'] ?? '');
+        $hoTen = trim($data['hoTenNV'] ?? '');
+
+        $error = null;
+
+        // 2. VALIDATION
+        // Kiểm tra tên
+        if (empty($hoTen)) {
+            $error = "Vui lòng nhập họ tên nhân viên.";
+        }
+        // Kiểm tra SĐT: Rỗng? Regex? Trùng với nhân viên khác (không phải chính nó)?
+        elseif (empty($sdt)) {
+            $error = "Vui lòng nhập số điện thoại.";
+        } elseif (!preg_match('/^0[0-9]{9,10}$/', $sdt)) {
+            $error = "Số điện thoại không hợp lệ (Phải bắt đầu bằng 0 và có 10-11 số).";
+        } elseif ($this->service->checkPhoneExistsExcept($sdt, $id)) {
+            $error = "Số điện thoại này đã được đăng ký cho nhân viên khác.";
+        }
+        // Kiểm tra Email
+        elseif (empty($email)) {
+            $error = "Vui lòng nhập Email.";
+        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $error = "Định dạng Email không hợp lệ.";
+        } elseif ($this->service->checkEmailExistsExcept($email, $id)) {
+            $error = "Email này đã được sử dụng bởi nhân viên khác.";
+        }
+
+        // 3. Xử lý khi có lỗi
+        if ($error) {
+            $_SESSION['error'] = $error;
+            $_SESSION['old_data'] = $data;
+            
+            header("Location: index.php?controller=employee&action=edit&id=" . $id);
+            exit;
+        }
+
+        // 4. Nếu hợp lệ -> Gọi service cập nhật
+        try {
+            $this->service->update($id, $data);
+            $_SESSION['success'] = "Cập nhật nhân viên thành công!";
+            
+            if(isset($_SESSION['old_data'])) unset($_SESSION['old_data']);
+
+            header("Location: index.php?controller=employee&action=list");
+            exit;
+        } catch (Exception $e) {
+            $_SESSION['error'] = "Lỗi hệ thống: " . $e->getMessage();
+            $_SESSION['old_data'] = $data;
+            header("Location: index.php?controller=employee&action=edit&id=" . $id);
+            exit;
+        }
     }
+
+    public function getEditData($id) {
+    // Lấy danh sách chức vụ để hiển thị trong Dropdown
+    $roles = $this->service->getAllRoles();
+    
+    // Trả về mảng dữ liệu
+    return [
+        'roles' => $roles
+    ];
+}
 
     // =======================================================
     // 4. HÀM HIỂN THỊ DANH SÁCH (GIỮ NGUYÊN)

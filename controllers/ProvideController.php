@@ -86,7 +86,54 @@ public function add($data) {
 }
 
     public function update($id, $data) {
-        return $this->service->update($id, $data);
+        // 1. Lấy dữ liệu và làm sạch
+        $sdt = trim($data['soDienThoai'] ?? '');
+        $ten = trim($data['tenNCC'] ?? '');
+        $diaChi = trim($data['diaChi'] ?? '');
+        
+        $error = null;
+
+        // 2. VALIDATION
+        // Kiểm tra tên
+        if (empty($ten)) {
+            $error = "Tên nhà cung cấp không được để trống.";
+        }
+        // Kiểm tra SĐT nếu người dùng có nhập
+        elseif (!empty($sdt)) {
+            // Check Regex
+            if (!preg_match('/^0[0-9]{9,10}$/', $sdt)) {
+                $error = "Số điện thoại không hợp lệ (Phải bắt đầu bằng 0 và dài 10-11 số).";
+            } 
+            // Check Trùng lặp (loại trừ chính nó)
+            elseif ($this->service->checkPhoneExistsExcept($sdt, $id)) {
+                $error = "Số điện thoại này đã được đăng ký cho nhà cung cấp khác.";
+            }
+        }
+
+        // 3. Xử lý khi có lỗi
+        if ($error) {
+            $_SESSION['error'] = $error;
+            $_SESSION['old_data'] = $data;
+            
+            header("Location: index.php?controller=provide&action=edit&id=" . $id);
+            exit;
+        }
+
+        // 4. Nếu hợp lệ -> Gọi service cập nhật
+        try {
+            $this->service->update($id, $data);
+            $_SESSION['success'] = "Cập nhật nhà cung cấp thành công!";
+            
+            if(isset($_SESSION['old_data'])) unset($_SESSION['old_data']);
+
+            header("Location: index.php?controller=provide&action=list");
+            exit;
+        } catch (Exception $e) {
+            $_SESSION['error'] = "Lỗi hệ thống: " . $e->getMessage();
+            $_SESSION['old_data'] = $data;
+            header("Location: index.php?controller=provide&action=edit&id=" . $id);
+            exit;
+        }
     }
 
     public function delete($id) {

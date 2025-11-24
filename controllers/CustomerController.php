@@ -34,6 +34,63 @@ class CustomerController {
     // Thay thế hàm add() trong CustomerController.php
 
     public function add($data) {
+    // 1. Lấy dữ liệu và làm sạch
+    $sdt = trim($data['soDienThoai'] ?? '');
+    $email = trim($data['email'] ?? '');
+    $hoTen = trim($data['hoTenKH'] ?? '');
+
+    $error = null;
+
+    // 2. VALIDATION
+    // Kiểm tra tên
+    if (empty($hoTen)) {
+        $error = "Vui lòng nhập họ tên khách hàng.";
+    }
+    // Kiểm tra SĐT: Rỗng? Regex? Trùng?
+    elseif (empty($sdt)) {
+        $error = "Vui lòng nhập số điện thoại.";
+    } elseif (!preg_match('/^0[0-9]{9,10}$/', $sdt)) {
+        $error = "Số điện thoại không hợp lệ (Phải bắt đầu bằng 0 và có 10-11 số).";
+    } elseif ($this->service->checkPhoneExistsExcept($sdt, null)) {
+        $error = "Số điện thoại này đã được đăng ký cho khách hàng khác.";
+    }
+    // Kiểm tra Email: Rỗng? Định dạng? Trùng?
+    elseif (empty($email)) {
+        $error = "Vui lòng nhập Email.";
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $error = "Định dạng Email không hợp lệ.";
+    } elseif ($this->service->checkEmailExistsExcept($email, null)) {
+        $error = "Email này đã được sử dụng bởi khách hàng khác.";
+    }
+
+    // 3. XỬ LÝ KHI CÓ LỖI
+    if ($error) {
+        $_SESSION['error'] = $error;
+        $_SESSION['old_data'] = $data; // Lưu lại dữ liệu để điền lại form
+        
+        // Quay lại trang thêm mới ngay lập tức
+        header("Location: index.php?controller=customer&action=add");
+        exit; 
+    }
+
+    // 4. NẾU HỢP LỆ -> GỌI SERVICE LƯU
+    try {
+        $this->service->add($data);
+        $_SESSION['success'] = "Thêm khách hàng thành công!";
+        
+        // Xóa dữ liệu cũ session nếu có
+        if(isset($_SESSION['old_data'])) unset($_SESSION['old_data']);
+
+        header("Location: index.php?controller=customer&action=list");
+        exit;
+    } catch (Exception $e) {
+        $_SESSION['error'] = "Lỗi hệ thống: " . $e->getMessage();
+        $_SESSION['old_data'] = $data;
+        header("Location: index.php?controller=customer&action=add");
+        exit;
+    }
+}
+    public function update($id, $data) {
         // 1. Lấy dữ liệu và làm sạch
         $sdt = trim($data['soDienThoai'] ?? '');
         $email = trim($data['email'] ?? '');
@@ -46,39 +103,37 @@ class CustomerController {
         if (empty($hoTen)) {
             $error = "Vui lòng nhập họ tên khách hàng.";
         }
-        // Kiểm tra SĐT: Rỗng? Regex? Trùng?
+        // Kiểm tra SĐT: Rỗng? Regex? Trùng với khách hàng khác (không phải chính nó)?
         elseif (empty($sdt)) {
             $error = "Vui lòng nhập số điện thoại.";
         } elseif (!preg_match('/^0[0-9]{9,10}$/', $sdt)) {
             $error = "Số điện thoại không hợp lệ (Phải bắt đầu bằng 0 và có 10-11 số).";
-        } elseif ($this->service->checkPhoneExists($sdt)) {
+        } elseif ($this->service->checkPhoneExistsExcept($sdt, $id)) {
             $error = "Số điện thoại này đã được đăng ký cho khách hàng khác.";
         }
-        // Kiểm tra Email (Nếu bắt buộc nhập)
+        // Kiểm tra Email
         elseif (empty($email)) {
             $error = "Vui lòng nhập Email.";
         } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $error = "Định dạng Email không hợp lệ.";
-        } elseif ($this->service->checkEmailExists($email)) {
+        } elseif ($this->service->checkEmailExistsExcept($email, $id)) {
             $error = "Email này đã được sử dụng bởi khách hàng khác.";
         }
 
-        // 3. XỬ LÝ KHI CÓ LỖI
+        // 3. Xử lý khi có lỗi
         if ($error) {
             $_SESSION['error'] = $error;
-            $_SESSION['old_data'] = $data; // Lưu lại dữ liệu để điền lại form
+            $_SESSION['old_data'] = $data;
             
-            // Quay lại trang thêm mới ngay lập tức
-            header("Location: index.php?controller=customer&action=add");
-            exit; 
+            header("Location: index.php?controller=customer&action=edit&id=" . $id);
+            exit;
         }
 
-        // 4. NẾU HỢP LỆ -> GỌI SERVICE LƯU
+        // 4. Nếu hợp lệ -> Gọi service cập nhật
         try {
-            $this->service->add($data);
-            $_SESSION['success'] = "Thêm khách hàng thành công!";
+            $this->service->update($id, $data);
+            $_SESSION['success'] = "Cập nhật khách hàng thành công!";
             
-            // Xóa dữ liệu cũ session nếu có
             if(isset($_SESSION['old_data'])) unset($_SESSION['old_data']);
 
             header("Location: index.php?controller=customer&action=list");
@@ -86,11 +141,10 @@ class CustomerController {
         } catch (Exception $e) {
             $_SESSION['error'] = "Lỗi hệ thống: " . $e->getMessage();
             $_SESSION['old_data'] = $data;
-            header("Location: index.php?controller=customer&action=add");
+            header("Location: index.php?controller=customer&action=edit&id=" . $id);
             exit;
         }
     }
-    public function update($id, $data) { return $this->service->update($id, $data); }
     
     // =======================================================
     // ** THAY THẾ: HÀM DELETE THÀNH DISABLE (Ẩn) **

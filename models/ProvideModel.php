@@ -115,12 +115,21 @@ class ProvideModel extends Database {
     }
 
     public function checkPhoneExists($sdt) {
-    $sql = "SELECT COUNT(*) FROM nhacungcap WHERE soDienThoai = ?";
-    $stmt = $this->conn->prepare($sql);
-    $stmt->bind_param("s", $sdt);
-    $stmt->execute();
-    $row = $stmt->get_result()->fetch_row();
-    return $row[0] > 0; // Trả về true nếu đã tồn tại
-}
+        $sql = "SELECT COUNT(*) FROM nhacungcap WHERE soDienThoai = ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("s", $sdt);
+        $stmt->execute();
+        $row = $stmt->get_result()->fetch_row();
+        return $row[0] > 0; // Trả về true nếu đã tồn tại
+    }
+
+    public function checkPhoneExistsExcept($sdt, $excludeId) {
+        $sql = "SELECT COUNT(*) FROM nhacungcap WHERE soDienThoai = ? AND maNCC != ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("si", $sdt, $excludeId);
+        $stmt->execute();
+        $row = $stmt->get_result()->fetch_row();
+        return $row[0] > 0;
+    }
 }
 ?>

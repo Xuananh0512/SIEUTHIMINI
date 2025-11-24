@@ -124,22 +124,23 @@ class CustomerModel extends Database
     // Thêm vào trong class CustomerModel
 
     // Kiểm tra trùng số điện thoại
-    public function checkPhoneExists($sdt)
+    // Kiểm tra trùng số điện thoại (loại trừ ID hiện tại)
+    public function checkPhoneExistsExcept($sdt, $excludeId)
     {
-        $sql = "SELECT COUNT(*) FROM khachhang WHERE soDienThoai = ?";
+        $sql = "SELECT COUNT(*) FROM khachhang WHERE soDienThoai = ? AND maKH != ?";
         $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param("s", $sdt);
+        $stmt->bind_param("si", $sdt, $excludeId);
         $stmt->execute();
         $row = $stmt->get_result()->fetch_row();
         return $row[0] > 0;
     }
 
-    // Kiểm tra trùng Email
-    public function checkEmailExists($email)
+    // Kiểm tra trùng Email (loại trừ ID hiện tại)
+    public function checkEmailExistsExcept($email, $excludeId)
     {
-        $sql = "SELECT COUNT(*) FROM khachhang WHERE email = ?";
+        $sql = "SELECT COUNT(*) FROM khachhang WHERE email = ? AND maKH != ?";
         $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param("s", $email);
+        $stmt->bind_param("si", $email, $excludeId);
         $stmt->execute();
         $row = $stmt->get_result()->fetch_row();
         return $row[0] > 0;
