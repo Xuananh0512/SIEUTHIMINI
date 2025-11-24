@@ -1,8 +1,8 @@
 <?php
 class InvoiceService {
-    private $model; // InvoiceModel
-    private $detailModel; // InvoiceDetailModel
-    private $productModel; // ProductModel
+    private $model; 
+    private $detailModel; 
+    private $productModel; 
 
     public function __construct() {
         $this->model = new InvoiceModel();
@@ -10,13 +10,22 @@ class InvoiceService {
         $this->productModel = new ProductModel();
     }
 
+    // --- 1. CÁC HÀM LỌC & TÌM KIẾM (QUAN TRỌNG - ĐỂ SỬA LỖI CỦA BẠN) ---
+    
+    // Hàm này đang bị thiếu gây ra lỗi Fatal Error
+    public function searchAdvanced($filters) {
+        return $this->model->searchAdvanced($filters);
+    }
+
     public function countAll($dateFrom = null, $dateTo = null, $minTotal = null, $maxTotal = null) { 
-    return $this->model->countAll($dateFrom, $dateTo, $minTotal, $maxTotal); 
-}
+        return $this->model->countAll($dateFrom, $dateTo, $minTotal, $maxTotal); 
+    }
 
     public function getPaginated($limit, $offset, $dateFrom = null, $dateTo = null, $minTotal = null, $maxTotal = null) { 
         return $this->model->getPaginated($limit, $offset, $dateFrom, $dateTo, $minTotal, $maxTotal); 
     }
+    // ------------------------------------------------------------------
+
     public function getAll() { return $this->model->getAll(); }
 
     public function getById($id) {
@@ -30,129 +39,85 @@ class InvoiceService {
         $ngayTao = date('Y-m-d H:i:s');
         $tongTien = 0;
         
-        // 1. Tính Tổng Tiền và KIỂM TRA TỒN KHO TRƯỚC
+        // Tính tổng tiền & check tồn kho
         if (isset($data['products']) && is_array($data['products'])) {
             foreach ($data['products'] as $p) {
                 if (empty($p['maSP']) || empty($p['soLuong'])) continue;
-
                 $prodInfo = $this->productModel->getById($p['maSP']);
                 $soLuongCanMua = (int)$p['soLuong'];
                 $soLuongTon = (int)$prodInfo['soLuongTon'];
                 
-                // ** LOGIC KIỂM TRA TỒN KHO **
                 if ($prodInfo && $soLuongCanMua > $soLuongTon) {
-                    $_SESSION['error'] = "Lỗi: Sản phẩm **{$prodInfo['tenSP']}** chỉ còn **{$soLuongTon}** sản phẩm, không đủ để bán **{$soLuongCanMua}**.";
+                    $_SESSION['error'] = "Lỗi: Sản phẩm **{$prodInfo['tenSP']}** chỉ còn **{$soLuongTon}**.";
                     return false;
                 }
-                // Nếu đủ, tính vào Tổng tiền
                 if ($prodInfo) {
                     $tongTien += ($soLuongCanMua * $prodInfo['donGiaBan']); 
                 }
             }
         } else {
-            $_SESSION['error'] = "Lỗi: Không có sản phẩm nào được chọn.";
+            $_SESSION['error'] = "Lỗi: Không có sản phẩm nào.";
             return false;
         }
         
         $tienKhachDua = $data['tienKhachDua'];
-        $tienThoi = $tienKhachDua - $tongTien;
-        $tienThoi = max(0, $tienThoi);
+        $tienThoi = max(0, $tienKhachDua - $tongTien);
         
-        // 2. Tạo Hóa Đơn Header và LẤY MAHD
+        // Tạo Hóa đơn
         $maHD = $this->model->add($maNV, $maKH, $ngayTao, $tongTien, $tienKhachDua, $tienThoi); 
 
-        // 3. Process Invoice Details (LƯU VÀ TRỪ TỒN KHO)
-        if ($maHD > 0 && isset($data['products']) && is_array($data['products'])) {
+        // Lưu chi tiết & Trừ kho
+        if ($maHD > 0 && isset($data['products'])) {
             foreach ($data['products'] as $prod) {
-                if (empty($prod['maSP']) || empty($prod['soLuong'])) continue;
-                
+                if (empty($prod['maSP'])) continue;
                 $product = $this->productModel->getById($prod['maSP']);
-                $soLuong = (int)$prod['soLuong']; // Lấy lại số lượng đã được kiểm tra
-                
+                $soLuong = (int)$prod['soLuong'];
                 if ($product) {
                     $thanhTien = $soLuong * $product['donGiaBan'];
-
-                    // LƯU CHI TIẾT
                     $this->detailModel->add($maHD, $prod['maSP'], $soLuong, $product['donGiaBan'], $thanhTien);
-
-                    // 4. Update Stock (Subtract quantity) - LOGIC TRỪ TỒN KHO
-                    $newStock = $product['soLuongTon'] - $soLuong;
                     
-                    // Cập nhật tồn kho (Gọi hàm update trong ProductModel)
-                    // Giả định $this->productModel->update là hàm trong ProductModel
-                    // $this->productModel->update(
-                    //     $prod['maSP'], 
-                    //     $product['maDM'], 
-                    //     $product['maNCC'], 
-                    //     $product['tenSP'], 
-                    //     $product['donGiaBan'], 
-                    //     $newStock, 
-                    //     $product['donViTinh'], 
-                    //     $product['hanSuDung'], 
-                    //     $product['moTa']
-                    // );
-                    // SỬ DỤNG HÀM UPDATE STOCK CÓ SẴN TRONG InvoiceModel ĐỂ ĐƠN GIẢN HOÁ
+                    $newStock = $product['soLuongTon'] - $soLuong;
                     $this->model->updateStock($prod['maSP'], $newStock);
                 }
             }
             return true;
         }
-        
-        $_SESSION['error'] = "Lỗi: Không tạo được hóa đơn (ID=0) hoặc không có sản phẩm được chọn.";
+        $_SESSION['error'] = "Lỗi tạo hóa đơn.";
         return false;
     }
 
-    // =======================================================
-    // ** HÀM DELETE (Ẩn hóa đơn và CỘNG TỒN KHO) **
-    // =======================================================
     public function delete($id) {
-        // 1. Lấy chi tiết hóa đơn (số lượng sản phẩm đã bán)
+        // Logic ẩn hóa đơn và trả hàng về kho
         $details = $this->detailModel->getByInvoiceId($id);
-        
-        // 2. CỘNG tồn kho lại (Trả hàng về kho)
         if (is_array($details)) {
             foreach ($details as $prod) {
                 $currentStock = $this->model->getExistingStock($prod['maSP']);
-                $newStock = $currentStock + $prod['soLuong']; // CỘNG TỒN KHO
+                $newStock = $currentStock + $prod['soLuong'];
                 $this->model->updateStock($prod['maSP'], $newStock);
             }
         }
-        
-        // 3. Ẩn hóa đơn (UPDATE trangThai = 0)
         return $this->model->delete($id); 
     }
     
-    // =======================================================
-    // ** THÊM: HÀM RESTORE (Khôi phục hóa đơn và TRỪ tồn kho) **
-    // =======================================================
     public function restore($id) {
-        // 1. Lấy chi tiết hóa đơn
+        // Logic khôi phục hóa đơn và trừ lại kho
         $details = $this->detailModel->getByInvoiceId($id);
-        
-        // ** THÊM: KIỂM TRA TỒN KHO TRƯỚC KHI TRỪ (Khôi phục) **
         if (is_array($details)) {
             foreach ($details as $prod) {
                 $currentStock = $this->model->getExistingStock($prod['maSP']);
                 $soLuong = $prod['soLuong'];
-
                 if ($currentStock < $soLuong) {
                     $product = $this->productModel->getById($prod['maSP']);
-                    $_SESSION['error'] = "Lỗi khôi phục: Sản phẩm **{$product['tenSP']}** chỉ còn **{$currentStock}** sản phẩm, không đủ để trừ tồn kho **{$soLuong}**.";
+                    $_SESSION['error'] = "Lỗi khôi phục: Sản phẩm {$product['tenSP']} không đủ tồn kho.";
                     return false;
                 }
             }
-        }
-
-        // 2. TRỪ tồn kho lại (Ghi nhận lại việc bán hàng)
-        if (is_array($details)) {
             foreach ($details as $prod) {
                 $currentStock = $this->model->getExistingStock($prod['maSP']);
-                $newStock = $currentStock - $prod['soLuong']; // TRỪ TỒN KHO
+                $newStock = $currentStock - $prod['soLuong'];
                 $this->model->updateStock($prod['maSP'], $newStock); 
             }
         }
-        
-        // 3. Khôi phục trạng thái hóa đơn (UPDATE trangThai = 1)
         return $this->model->restore($id);
     }
     
